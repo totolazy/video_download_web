@@ -1,5 +1,6 @@
-"""Video routes: URL platform detection and resolution listing."""
+﻿"""Video routes: URL platform detection and resolution listing."""
 import asyncio
+import logging
 import re
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -17,14 +18,13 @@ from app.schemas.video import (
 )
 from app.services.platform_detector import ALL_PLATFORMS, detect_platform
 
+logger = logging.getLogger(__name__)
+
 router = APIRouter(prefix="/api/videos", tags=["videos"])
 
-# yt-dlp -F output: format_id  extension  resolution  ...  description
-# We match lines like: "22   mp4   1280x720   ..."
 _FORMAT_LINE_RE = re.compile(
     r"^(?P<format_id>\S+)\s+(?P<ext>\S+)\s+(?P<resolution>\S+)"
 )
-
 _AUDIO_EXTS = frozenset({"m4a", "mp3", "aac", "opus", "ogg", "wav", "webm"})
 
 
@@ -46,8 +46,8 @@ async def resolutions(
     current_user: User = Depends(get_current_user),
     db=Depends(get_db),
 ):
-    """Fetch available resolutions for a video URL using yt-dlp -F."""
-    # Check cookies
+    """Fetch available resolutions for a video URL using yt-dlp -F. Timeout: 120s."""
+    # Check cookies (DB first, then filesystem fallback)
     result = await db.execute(
         select(Cookie).where(
             Cookie.user_id == current_user.id,
@@ -55,75 +55,88 @@ async def resolutions(
         )
     )
     cookie = result.scalar_one_or_none()
+
     if cookie is None:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="请先上传该平台的 Cookies",
-        )
+        # Fallback: try filesystem
+        from app.config import settings
+        from pathlib import Path
+        cookie_file = settings.COOKIES_DIR / str(current_user.id) / platform / "cookies.txt"
+        if cookie_file.exists():
+            cookies_path = str(cookie_file)
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="请先上传该平台的 Cookies",
+            )
+    else:
+        cookies_path = cookie.file_path
 
-    cookies_path = cookie.file_path
-
+    process = None
     try:
         process = await asyncio.create_subprocess_exec(
-            "yt-dlp",
-            "-F", url,
+            "yt-dlp", "-F", url,
             "--cookies", cookies_path,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )
-
-        stdout, stderr = await asyncio.wait_for(
-            process.communicate(), timeout=30
+        stdout, stderr_bytes = await asyncio.wait_for(
+            process.communicate(), timeout=120
         )
     except asyncio.TimeoutError:
+        if process is not None and process.returncode is None:
+            try:
+                process.kill()
+                await process.wait()
+            except Exception:
+                pass
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="获取分辨率超时，请稍后重试",
+            detail="获取分辨率超时（120秒），请检查网络或稍后重试",
         )
-    except Exception:
+    except Exception as e:
+        logger.exception("yt-dlp -F failed for platform=%s url=%s: %s", platform, url, e)
+        if process is not None and process.returncode is None:
+            try:
+                process.kill()
+                await process.wait()
+            except Exception:
+                pass
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="获取分辨率失败，请稍后重试",
+            detail=f"获取分辨率失败：{str(e)[:200]}",
         )
 
     if process.returncode != 0:
+        stderr_text = stderr_bytes.decode("utf-8", errors="replace")[:500]
+        logger.warning("yt-dlp -F returned code=%d stderr=%s", process.returncode, stderr_text)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="获取分辨率失败，请稍后重试",
+            detail="获取分辨率失败：yt-dlp 返回错误，请检查 Cookies 是否有效",
         )
 
     # Parse yt-dlp -F output
     seen_descriptions: set[str] = set()
-    resolutions: list[ResolutionOption] = []
+    resolution_list: list[ResolutionOption] = []
 
     for line in stdout.decode("utf-8", errors="replace").splitlines():
         match = _FORMAT_LINE_RE.match(line)
         if not match:
             continue
-
         format_id = match.group("format_id")
         ext = match.group("ext")
-        resolution_str = match.group("resolution")
-
         if _is_audio_only(ext):
             continue
-
-        # Build description from the rest of the line after resolution
         parts = line.split(maxsplit=2)
-        if len(parts) >= 3:
-            description = parts[2]
-        else:
-            description = f"{resolution_str} {ext}"
-
+        description = parts[2] if len(parts) >= 3 else f"{match.group('resolution')} {ext}"
         if description not in seen_descriptions:
             seen_descriptions.add(description)
-            resolutions.append(
+            resolution_list.append(
                 ResolutionOption(format_id=format_id, description=description)
             )
 
-    if not resolutions:
-        resolutions.append(
+    if not resolution_list:
+        resolution_list.append(
             ResolutionOption(format_id="best", description="默认最佳质量")
         )
 
-    return ResolutionsResponse(resolutions=resolutions)
+    return ResolutionsResponse(resolutions=resolution_list)

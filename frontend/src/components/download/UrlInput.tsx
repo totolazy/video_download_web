@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input"
 import { Search, Loader2 } from "lucide-react"
 
 interface UrlInputProps {
-  onDetected: (detected: string, platforms: string[]) => void
+  onDetected: (detected: string, platforms: string[], url: string) => void
 }
 
 export default function UrlInput({ onDetected }: UrlInputProps) {
@@ -19,7 +19,7 @@ export default function UrlInput({ onDetected }: UrlInputProps) {
     setLoading(true)
     try {
       const result = await detect(url.trim())
-      onDetected(result.detected, result.platforms)
+      onDetected(result.detected ?? "", result.platforms, url.trim())
     } catch {
       setError("URL 检测失败，请检查链接是否正确")
     } finally {

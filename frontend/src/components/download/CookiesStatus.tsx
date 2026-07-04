@@ -7,9 +7,10 @@ import { Upload, CheckCircle2, XCircle, Loader2 } from "lucide-react"
 
 interface CookiesStatusProps {
   platform: string
+  onUploaded?: () => void
 }
 
-export default function CookiesStatus({ platform }: CookiesStatusProps) {
+export default function CookiesStatus({ platform, onUploaded }: CookiesStatusProps) {
   const { cookiesStatus, isLoading, uploadCookie } = useCookies()
   const fileRef = useRef<HTMLInputElement>(null)
 
@@ -27,7 +28,12 @@ export default function CookiesStatus({ platform }: CookiesStatusProps) {
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file && platform) {
-      await uploadCookie({ platform, file })
+      try {
+        await uploadCookie({ platform, file })
+        onUploaded?.()
+      } catch {
+        // error handled by mutation
+      }
     }
     if (fileRef.current) fileRef.current.value = ""
   }
@@ -38,7 +44,7 @@ export default function CookiesStatus({ platform }: CookiesStatusProps) {
         <>
           <CheckCircle2 className="h-4 w-4 text-green-500" />
           <Badge variant="outline" className="border-green-500 text-green-600">
-            已上传 ({formatDate(status.uploaded_at)})
+            {formatDate(status.uploaded_at) ? `已上传 (${formatDate(status.uploaded_at)})` : "已上传"}
           </Badge>
           <Button variant="ghost" size="sm" onClick={() => fileRef.current?.click()}>
             <Upload className="h-3 w-3 mr-1" />
