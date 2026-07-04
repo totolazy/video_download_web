@@ -1,28 +1,58 @@
-"""Scheduled cleanup: remove video files older than VIDEO_RETENTION_MINUTES."""
+﻿"""Scheduled cleanup: remove completed video files older than 30 minutes."""
 import shutil
 import time as _time
-from pathlib import Path
+from datetime import datetime, timezone
+
+from sqlalchemy import select
 
 from app.config import settings
+from app.database import async_session_factory
+from app.models.download import Download
 
 
 async def cleanup_expired_videos() -> None:
-    """Scan the videos directory and delete files older than the retention period."""
+    """Delete completed download files that have been idle for 30+ minutes.
+    
+    Only deletes files whose corresponding Download record has
+    status='completed' and completed_at is older than VIDEO_RETENTION_MINUTES.
+    In-progress or failed downloads are never touched.
+    """
     videos_dir = settings.VIDEOS_DIR
     if not videos_dir.exists():
         return
 
-    cutoff = _time.time() - (settings.VIDEO_RETENTION_MINUTES * 60)
+    cutoff = datetime.now(timezone.utc).timestamp() - (settings.VIDEO_RETENTION_MINUTES * 60)
 
-    for item in videos_dir.iterdir():
-        try:
-            if item.is_dir():
-                st_mtime = item.stat().st_mtime
-                if st_mtime < cutoff:
-                    shutil.rmtree(item)
-            elif item.is_file():
-                st_mtime = item.stat().st_mtime
-                if st_mtime < cutoff:
-                    item.unlink()
-        except Exception:
-            pass
+    async with async_session_factory() as db:
+        # Find all completed downloads older than the cutoff
+        result = await db.execute(
+            select(Download).where(
+                Download.status == "completed",
+                Download.completed_at.isnot(None),
+                Download.file_path.isnot(None),
+            )
+        )
+        completed = result.scalars().all()
+
+        for download in completed:
+            # Double-check: completed_at must be older than retention period
+            if download.completed_at is None:
+                continue
+            completed_ts = download.completed_at.timestamp()
+            if completed_ts >= cutoff:
+                continue  # still within retention window
+
+            # Delete the video directory
+            video_dir = videos_dir / str(download.id)
+            try:
+                if video_dir.exists():
+                    shutil.rmtree(video_dir)
+            except Exception:
+                continue
+
+            # Mark DB record as expired (clear file references)
+            download.file_path = None
+            download.file_name = None
+            download.file_size = None
+
+        await db.commit()

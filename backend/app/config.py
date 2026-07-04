@@ -1,13 +1,13 @@
-"""全局配置，所有路径和常量集中管理"""
+﻿"""鍏ㄥ眬閰嶇疆锛屾墍鏈夎矾寰勫拰甯搁噺闆嗕腑绠＄悊"""
 from pathlib import Path
 from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    # 项目根目录（backend/ 的上一级）
+    # 椤圭洰鏍圭洰褰曪紙backend/ 鐨勪笂涓€绾э級
     PROJECT_ROOT: Path = Path(__file__).resolve().parent.parent.parent
 
-    # 数据目录
+    # 鏁版嵁鐩綍
     DATA_DIR: Path = PROJECT_ROOT / "data"
     VIDEOS_DIR: Path = DATA_DIR / "videos"
     COOKIES_DIR: Path = DATA_DIR / "cookies"
@@ -18,20 +18,18 @@ class Settings(BaseSettings):
     JWT_ALGORITHM: str = "HS256"
     JWT_EXPIRE_HOURS: int = 24
 
-    # 视频保留分钟数（超时自动清理）
-    VIDEO_RETENTION_MINUTES: int = 60
+    # 瑙嗛淇濈暀鍒嗛挓鏁帮紙瓒呮椂鑷姩娓呯悊锛?    VIDEO_RETENTION_MINUTES: int = 30
 
-    # 清理任务间隔（分钟）
-    CLEANUP_INTERVAL_MINUTES: int = 60
+    # 娓呯悊浠诲姟闂撮殧锛堝垎閽燂級
+    CLEANUP_INTERVAL_MINUTES: int = 15
 
-    # 支持的所有平台
-    SUPPORTED_PLATFORMS: list[str] = [
+    # 鏀寔鐨勬墍鏈夊钩鍙?    SUPPORTED_PLATFORMS: list[str] = [
         "youtube", "bilibili", "instagram",
         "facebook", "douyin", "tiktok"
     ]
 
     class Config:
-        env_prefix = "VDL_"  # 环境变量前缀 VDL_JWT_SECRET 可覆盖
-
+        env_prefix = "VDL_"  # 鐜鍙橀噺鍓嶇紑 VDL_JWT_SECRET 鍙鐩?
 
 settings = Settings()
+
