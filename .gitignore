@@ -1,22 +1,10 @@
-# Python
-__pycache__/
-*.py[cod]
-*.so
-venv/
-.venv/
-
-# IDE
-.vscode/
-.idea/
-
-# Data (运行时不提交)
 data/
-
-# Environment
+backend/venv/
+frontend/node_modules/
+frontend/dist/
+frontend/package-lock.json
+__pycache__/
+*.pyc
+*.pyo
+server_pids.txt
 .env
-.env.*
-!.env.example
-
-# OS
-.DS_Store
-Thumbs.db
