@@ -1,6 +1,10 @@
-﻿"""Scheduled cleanup: remove completed video files older than 30 minutes."""
+﻿"""Scheduled cleanup: remove non-processing video files older than 30 minutes.
+
+Logic:
+- Delete: completed, failed, pending (anything sitting > 30 min)
+- Keep:  processing/merging (still active, no matter how old)
+"""
 import shutil
-import time as _time
 from datetime import datetime, timezone
 
 from sqlalchemy import select
@@ -9,13 +13,15 @@ from app.config import settings
 from app.database import async_session_factory
 from app.models.download import Download
 
+# These statuses mean the download is still active — never touch them
+_ACTIVE_STATUSES = frozenset({"pending", "processing"})
+
 
 async def cleanup_expired_videos() -> None:
-    """Delete completed download files that have been idle for 30+ minutes.
-    
-    Only deletes files whose corresponding Download record has
-    status='completed' and completed_at is older than VIDEO_RETENTION_MINUTES.
-    In-progress or failed downloads are never touched.
+    """Delete all non-active download files that are older than 30 minutes.
+
+    Active downloads (pending / processing) are never touched, even if
+    they have been running for longer than 30 minutes.
     """
     videos_dir = settings.VIDEOS_DIR
     if not videos_dir.exists():
@@ -24,23 +30,21 @@ async def cleanup_expired_videos() -> None:
     cutoff = datetime.now(timezone.utc).timestamp() - (settings.VIDEO_RETENTION_MINUTES * 60)
 
     async with async_session_factory() as db:
-        # Find all completed downloads older than the cutoff
+        # Find ALL downloads with files on disk that are NOT active
         result = await db.execute(
             select(Download).where(
-                Download.status == "completed",
-                Download.completed_at.isnot(None),
-                Download.file_path.isnot(None),
+                Download.status.notin_(_ACTIVE_STATUSES),
             )
         )
-        completed = result.scalars().all()
+        downloads = result.scalars().all()
 
-        for download in completed:
-            # Double-check: completed_at must be older than retention period
-            if download.completed_at is None:
+        for download in downloads:
+            # Use created_at as the age reference for non-completed downloads
+            ref_time = download.completed_at or download.created_at
+            if ref_time is None:
                 continue
-            completed_ts = download.completed_at.timestamp()
-            if completed_ts >= cutoff:
-                continue  # still within retention window
+            if ref_time.timestamp() >= cutoff:
+                continue  # still within 30-minute window
 
             # Delete the video directory
             video_dir = videos_dir / str(download.id)
@@ -50,7 +54,7 @@ async def cleanup_expired_videos() -> None:
             except Exception:
                 continue
 
-            # Mark DB record as expired (clear file references)
+            # Clear file references in DB (but keep the record for history)
             download.file_path = None
             download.file_name = None
             download.file_size = None
