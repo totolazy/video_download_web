@@ -1,4 +1,4 @@
-<!--
+﻿<!--
   ============================================================================
   实施计划：数据库层（SQLite + SQLAlchemy）
   关联设计文档：docs/nbl/specs/2026-07-04-video-downloader-design.md
@@ -454,3 +454,4 @@ async def lifespan(app: FastAPI):
 ---
 
 **Execution Mode:** serial (Task 1→2→3, then 4+5 in parallel)
+

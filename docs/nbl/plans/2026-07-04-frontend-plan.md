@@ -10,323 +10,377 @@
 
 ---
 
-## 文件清单（30+ 个文件）
+## 文件清单（38 个文件：34 个 src + 4 个项目配置）
 
 | # | 文件 | 职责 |
 |---|------|------|
-| frontend/package.json, tsconfig.json, vite.config.ts, etc. | 项目配置 |
-| src/api/client.ts | axios 实例 + JWT 拦截器 |
-| src/api/auth.ts | 登录 API |
-| src/api/videos.ts | URL检测 + 分辨率 |
-| src/api/downloads.ts | 下载 CRUD API |
-| src/api/cookies.ts | Cookies 管理 API |
-| src/api/admin.ts | 用户管理 API (root) |
-| src/contexts/AuthContext.tsx | 认证状态 Provider |
-| src/hooks/useAuth.ts | 认证 hook |
-| src/hooks/useDownload.ts | 下载流程 hook |
-| src/hooks/useCookies.ts | Cookies hook |
-| src/lib/utils.ts | 工具函数 |
-| src/lib/constants.ts | 常量（平台列表等） |
-| src/components/layout/AppLayout.tsx | 布局：Sidebar + Outlet |
-| src/components/layout/Sidebar.tsx | 侧边导航 |
-| src/components/layout/ProtectedRoute.tsx | 路由守卫 |
-| src/components/download/UrlInput.tsx | URL 输入 + 检测 |
-| src/components/download/PlatformSelect.tsx | 平台选择器 |
-| src/components/download/ResolutionSelect.tsx | 分辨率选择器 |
-| src/components/download/CookiesStatus.tsx | Cookies 状态 + 上传 |
-| src/components/download/ProgressBar.tsx | 进度条 + 下载按钮 |
-| src/components/download/DownloadCard.tsx | 下载卡片（组装） |
-| src/components/history/HistoryTable.tsx | 历史列表表格 |
-| src/components/history/HistoryRow.tsx | 单条记录行 |
-| src/components/admin/UserTable.tsx | 用户列表表格 |
-| src/components/admin/CreateUserDialog.tsx | 创建用户弹窗 |
-| src/pages/LoginPage.tsx | 登录页 |
-| src/pages/HomePage.tsx | 首页/下载页 |
-| src/pages/HistoryPage.tsx | 下载历史页 |
-| src/pages/CookiesPage.tsx | Cookies 管理页 |
-| src/pages/AdminPage.tsx | 用户管理页 |
-| src/App.tsx | 路由定义 |
-| src/main.tsx | 入口 |
-| src/index.css | Tailwind + 全局样式 |
+| 1 | frontend/package.json, tsconfig.json, vite.config.ts, index.html | 项目配置文件（4个） |
+| 2 | src/api/client.ts | axios 实例 + JWT 拦截器 |
+| 3 | src/api/auth.ts | 登录 API（login, getMe） |
+| 4 | src/api/videos.ts | URL 检测 + 分辨率 |
+| 5 | src/api/downloads.ts | 下载 CRUD（submit, list, getOne, retry） |
+| 6 | src/api/cookies.ts | Cookies 管理（getStatus, upload, remove） |
+| 7 | src/api/admin.ts | 用户管理（listUsers, createUser, deleteUser） |
+| 8 | src/contexts/AuthContext.tsx | 认证状态 Provider |
+| 9 | src/hooks/useAuth.ts | 认证 hook |
+| 10 | src/hooks/useDownload.ts | 下载流程 hook + SSE progress |
+| 11 | src/hooks/useCookies.ts | Cookies hook |
+| 12 | src/lib/utils.ts | 工具函数（formatFileSize, formatDate） |
+| 13 | src/lib/constants.ts | 常量（平台列表、分辨率选项） |
+| 14 | src/components/layout/AppLayout.tsx | 整体布局：Sidebar + Outlet |
+| 15 | src/components/layout/Sidebar.tsx | 侧边导航 |
+| 16 | src/components/layout/ProtectedRoute.tsx | 路由守卫：未登录跳 /login |
+| 17 | src/components/download/UrlInput.tsx | URL 输入 + 检测按钮 |
+| 18 | src/components/download/PlatformSelect.tsx | 平台选择器（自动识别 + 手动） |
+| 19 | src/components/download/ResolutionSelect.tsx | 分辨率选择器 |
+| 20 | src/components/download/CookiesStatus.tsx | Cookies 状态 + 上传 |
+| 21 | src/components/download/ProgressBar.tsx | 进度条 + 下载按钮 + SSE 订阅 |
+| 22 | src/components/download/DownloadCard.tsx | 下载卡片（组装以上5个子组件） |
+| 23 | src/components/history/HistoryTable.tsx | 下载历史表格（分页） |
+| 24 | src/components/history/HistoryRow.tsx | 单条历史记录行 |
+| 25 | src/components/admin/UserTable.tsx | 用户列表表格 |
+| 26 | src/components/admin/CreateUserDialog.tsx | 创建用户弹窗 |
+| 27 | src/pages/LoginPage.tsx | 登录页 |
+| 28 | src/pages/HomePage.tsx | 首页/下载页 |
+| 29 | src/pages/HistoryPage.tsx | 下载历史页 |
+| 30 | src/pages/CookiesPage.tsx | Cookies 管理页 |
+| 31 | src/pages/AdminPage.tsx | 用户管理页（仅 root 可见） |
+| 32 | src/App.tsx | 路由定义 |
+| 33 | src/main.tsx | React 入口 |
+| 34 | src/index.css | Tailwind + 全局样式 |
 
 ---
 
-## Task 1: 项目初始化 (Vite + shadcn/ui)
+## Task 1: 项目初始化 (Vite + shadcn/ui + 依赖安装)
 
 **Dependencies:** None | **Parallelizable:** Yes
 
-- npm create vite@latest frontend -- --template react-ts
-- 安装依赖: react-router-dom, @tanstack/react-query, axios, lucide-react
-- 安装 tailwindcss, postcss, autoprefixer
-- npx shadcn@latest init (slate主题, css variables: yes)
-- npx shadcn@latest add button, input, select, card, dialog, table, progress, badge, toast, separator, sheet
-- 配置 vite.config.ts: server.proxy { '/api': 'http://127.0.0.1:8000' }
-- 配置 tsconfig.json paths: "@/*" -> "./src/*"
+步骤：
+1. npm create vite@latest frontend -- --template react-ts
+2. cd frontend && npm install
+3. npm install react-router-dom @tanstack/react-query axios lucide-react
+4. npm install -D tailwindcss @tailwindcss/vite postcss autoprefixer
+5. npx shadcn@latest init（slate 主题，css variables: yes，默认路径）
+6. npx shadcn@latest add button input select card dialog table progress badge toast separator sheet
+7. 配置 vite.config.ts: server.proxy { "/api": "http://127.0.0.1:8000" }
+8. 配置 tsconfig.json paths: "@/*" -> "./src/*"
+9. 配置 index.css: @tailwind base/components/utilities + 基础 body 样式
+
+git commit -m "feat: init React+Vite+shadcn/ui frontend project"
 
 ---
 
-## Task 2: 基础工具层 (api/ + lib/ + contexts/)
+## Task 2: 基础工具层 (client.ts + constants.ts + utils.ts + AuthContext)
 
 **Dependencies:** Task 1 | **Parallelizable:** No
 
-### api/client.ts — axios 实例
+### src/api/client.ts
+- axios.create({ baseURL: "/api" })
+- 请求拦截器: 从 localStorage 取 token → Authorization: Bearer {token}
+- 响应拦截器: 401 → 清除 localStorage token → window.location.href = "/login"
+- 导出 client 实例
 
-- baseURL: "/api"
-- 请求拦截器: 自动加 Authorization: Bearer {token}
-- 响应拦截器: 401 时清除 localStorage token + 跳转 /login
+### src/lib/constants.ts
+- PLATFORMS: [{value, label}] 6个平台：youtube/YouTube, bilibili/B站, instagram/Instagram, facebook/Facebook, douyin/抖音, tiktok/TikTok
+- SUPPORTED_PLATFORMS: ["youtube","bilibili",...] 
 
-### lib/constants.ts — 常量
+### src/lib/utils.ts
+- formatFileSize(bytes): < 1KB→"B", < 1MB→"KB", < 1GB→"MB", else→"GB"
+- formatDate(iso): new Date(iso).toLocaleString("zh-CN")
 
-- PLATFORMS: [{value: 'youtube', label: 'YouTube'}, ...] 6平台
-- RESOLUTION_OPTIONS: ['2160p','1440p','1080p','720p','480p','360p']
-
-### lib/utils.ts — 工具函数
-
-- formatFileSize(bytes): 转 KB/MB/GB
-- formatDate(iso): 友好时间格式
-
-### contexts/AuthContext.tsx — 认证上下文
-
-- Provider 包裹整个App
+### src/contexts/AuthContext.tsx
+- createContext + AuthProvider 包裹 App
 - state: user (UserInfo|null), token (string|null), loading (bool)
-- 启动时从 localStorage 读 token，调 GET /api/auth/me 验证
-- login(username,password): POST /api/auth/login，存 token 到 localStorage
-- logout(): 清除 token + user，跳转 /login
-- isRoot: computed from user.is_root
+- useEffect 启动: 从 localStorage 读 token → 有则调 GET /api/auth/me → 失败则清空
+- login(username, password): POST /api/auth/login → 存 token 到 localStorage → setUser
+- logout(): 清除 localStorage token + user → navigate("/login")
+- isRoot: user?.is_root ?? false
+- value 导出: { user, token, loading, login, logout, isRoot }
+
+git commit -m "feat: add API client, constants, utils, and AuthContext"
 
 ---
 
-## Task 3: API 层 (5个文件)
+## Task 3: API 层函数（6 个文件）
 
-**Dependencies:** Task 1 | **Parallelizable:** Yes
+**Dependencies:** Task 2 | **Parallelizable:** Yes（6个文件之间互相独立）
 
-### api/auth.ts
-- login(username, password) -> POST /api/auth/login -> LoginResponse
-- getMe() -> GET /api/auth/me -> UserInfo
+### src/api/auth.ts
+- login(username: string, password: string): client.post("/auth/login", {username, password}) → data
+- getMe(): client.get("/auth/me") → data
 
-### api/videos.ts
-- detect(url) -> POST /api/videos/detect -> DetectResponse
-- getResolutions(platform, url) -> GET /api/videos/resolutions -> ResolutionsResponse
+### src/api/videos.ts
+- detect(url: string): client.post("/videos/detect", {url}) → data as DetectResponse
+- getResolutions(platform: string, url: string): client.get("/videos/resolutions", {params: {platform, url}}) → data as ResolutionsResponse
 
-### api/downloads.ts
-- submit(url, platform, resolution) -> POST /api/downloads -> {download_id}
-- list(page, pageSize) -> GET /api/downloads -> DownloadListResponse
-- getOne(id) -> GET /api/downloads/{id} -> DownloadResponse
-- retry(id) -> POST /api/downloads/{id}/retry -> {download_id}
+### src/api/downloads.ts
+- submit(url, platform, resolution): client.post("/downloads", {url, platform, resolution}) → data
+- list(page=1, pageSize=20): client.get("/downloads", {params: {page, page_size: pageSize}}) → data
+- getOne(id): client.get(/downloads/{id}) → data
+- retry(id): client.post(/downloads/{id}/retry) → data
 
-### api/cookies.ts
-- getStatus() -> GET /api/cookies/status -> CookieStatusResponse
-- upload(platform, file) -> POST /api/cookies/upload (FormData) -> CookieUploadResponse
-- remove(platform) -> DELETE /api/cookies/{platform}
+### src/api/cookies.ts
+- getStatus(): client.get("/cookies/status") → data
+- upload(platform, file): FormData → client.post("/cookies/upload", formData) → data
+- remove(platform): client.delete(/cookies/{platform}) → data
 
-### api/admin.ts
-- listUsers() -> GET /api/admin/users -> UserListResponse
-- createUser(username, password, note) -> POST /api/admin/users -> CreateUserResponse
-- deleteUser(id) -> DELETE /api/admin/users/{id}
+### src/api/admin.ts
+- listUsers(): client.get("/admin/users") → data
+- createUser(username, password, note): client.post("/admin/users", {username,password,note}) → data
+- deleteUser(id): client.delete(/admin/users/{id}) → data
+
+git commit -m "feat: add all API layer functions"
 
 ---
 
-## Task 4: Hooks 层
+## Task 4: Hooks 层（3 个文件）
 
 **Dependencies:** Task 2, 3 | **Parallelizable:** Yes
 
-### hooks/useAuth.ts
-- 封装 useContext(AuthContext)，导出 useAuth hook
-- 返回: { user, token, login, logout, loading, isRoot }
+### src/hooks/useAuth.ts
+- export function useAuth() { return useContext(AuthContext) }
+- 返回: { user, token, loading, login, logout, isRoot }
 
-### hooks/useCookies.ts
-- useQuery: cookiesStatus -> getStatus(), 30s staleTime
-- useMutation: uploadCookie -> upload() -> invalidate cookiesStatus
-- useMutation: deleteCookie -> remove() -> invalidate cookiesStatus
+### src/hooks/useCookies.ts
+- useQuery: cookiesStatus, queryFn: getStatus, staleTime: 30s
+- useMutation: uploadCookie, mutationFn: ({platform, file}) => upload(platform, file), onSuccess invalidate cookiesStatus
+- useMutation: deleteCookie, mutationFn: remove, onSuccess invalidate cookiesStatus
+- 返回: { cookiesStatus, uploadCookie, deleteCookie }
 
-### hooks/useDownload.ts — 核心下载 hook
-- useMutation: submitDownload -> submit()
-- useQuery: downloadHistory -> list()
-- 自定义: useDownloadProgress(downloadId) — EventSource SSE hook
-  - 状态: { progress, status, fileName, fileSize, errorMessage }
-  - useEffect 内 new EventSource(url)，onmessage 更新状态
-  - status=completed/failed 时 close，cleanup 时 close
+### src/hooks/useDownload.ts — 核心
+- useQuery: downloadHistory(page), queryFn: () => list(page)
+- useMutation: submitDownload, mutationFn: submit
+- useMutation: retryDownload, mutationFn: retry
+- useDownloadProgress(downloadId):
+  - useState: { progress:0, status:"pending", fileName:null, fileSize:null, errorMessage:null }
+  - useEffect: new EventSource(/api/downloads/{downloadId}/progress)
+  - onmessage: JSON.parse → setState
+  - status === "completed" || "failed" → es.close()
+  - cleanup: es.close()
+  - 返回 state
 
----
-
-## Task 5: Layout 组件
-
-**Dependencies:** Task 2 | **Parallelizable:** Yes
-
-### components/layout/ProtectedRoute.tsx
-- 读取 AuthContext，loading 时显示 spinner
-- 未登录 redirect /login
-- 已登录渲染 Outlet
-
-### components/layout/Sidebar.tsx
-- 导航项: Home, History, Cookies, Admin(仅isRoot)
-- 当前路由高亮，lucide-react 图标
-- 底部: 用户名 + [退出登录]
-
-### components/layout/AppLayout.tsx
-- 左侧 Sidebar (w-64固定)，右侧 Outlet (flex-1 overflow-auto)
-- min-h-screen 布局
+git commit -m "feat: add hooks (useAuth, useCookies, useDownload)"
 
 ---
 
-## Task 6: Download 相关组件（6个）
+## Task 5: Layout 布局组件（3 个文件）
 
-**Dependencies:** Task 4 | **Parallelizable:** No (依赖 hooks)
+**Dependencies:** Task 4 | **Parallelizable:** Yes
 
-### components/download/UrlInput.tsx
-- 输入框 + [检测] 按钮
-- 输入链接后点击检测调 detect(url)
-- 检测结果通过 callback 通知父组件 (detected, platforms)
+### src/components/layout/ProtectedRoute.tsx
+- useAuth() → loading: 显示 Spinner
+- !user: Navigate to="/login"
+- user: Outlet
 
-### components/download/PlatformSelect.tsx
-- Select 组件，选项来自 platforms 列表
-- 默认值: 检测结果 (detected)
-- 支持搜索/手动选择其他平台
+### src/components/layout/Sidebar.tsx
+- 顶部: 网站标题 "视频下载"
+- nav 列表（lucide 图标）:
+  - Home (Download) → "/"
+  - History (Clock) → "/history"
+  - Cookies (Cookie) → "/cookies"
+  - {isRoot && Admin (Shield) → "/admin"}
+- 底部: user?.username + [退出登录] 按钮（LogOut 图标）
 
-### components/download/ResolutionSelect.tsx
-- Select 组件，选项来自 getResolutions()
-- 显示 format_id + description
-- 如果没有分辨率（instagram/tiktok等短格式），可选是否显示默认选项
+### src/components/layout/AppLayout.tsx
+- 左: Sidebar (w-64, h-screen, fixed)
+- 右: Outlet (ml-64, p-6, min-h-screen)
+- bg-gray-50 背景
 
-### components/download/CookiesStatus.tsx
-- 显示指定平台的 cookies 状态
-- 已有: 绿色 badge "已上传 (日期)" + [重新上传] 按钮
-- 无: 红色 badge "未上传" + [上传文件] 按钮
-- 上传: <input type=file> 选择txt文件 -> upload(platform, file)
+git commit -m "feat: add layout components (ProtectedRoute, Sidebar, AppLayout)"
 
-### components/download/ProgressBar.tsx
+---
+
+## Task 6: Download 相关组件（6 个文件）
+
+**Dependencies:** Task 4 | **Parallelizable:** No（DownloadCard 组装其他 5 个子组件）
+
+### src/components/download/UrlInput.tsx
+- Props: onDetected(detected, platforms)
+- Textarea/Input + [检测] 按钮
+- 点击检测: detect(url) → onDetected(result.detected, result.platforms)
+- 检测中: 按钮 disabled + spinner
+
+### src/components/download/PlatformSelect.tsx
+- Props: detected, platforms, value, onChange
+- Select 组件，items = platforms.map(p => ({value:p, label:PLATFORMS[p]}))
+- 默认值 = detected || platforms[0]
+- 提供搜索功能
+
+### src/components/download/ResolutionSelect.tsx
+- Props: platform, url, value, onChange, disabled
+- 使用 React Query: useQuery getResolutions(platform, url)，enabled: !!platform && !!url
+- Select 组件，items = resolutions
+- label: "{description} ({format_id})"
+- 如果没有分辨率可用: 显示 "默认" 选项
+
+### src/components/download/CookiesStatus.tsx
+- Props: platform, onRefresh?
+- 使用 useCookies hook
+- 如果 cookiesStatus?.cookies[platform]?.exists:
+  - Badge(绿色): "已上传 ({uploaded_at})"
+  - [重新上传] 按钮 → file input → uploadCookie
+- 否则:
+  - Badge(红色): "未上传"
+  - [上传 Cookies] 按钮 → file input → uploadCookie
+- 上传接受 .txt 文件
+
+### src/components/download/ProgressBar.tsx
 - Props: downloadId, onComplete
-- 使用 useDownloadProgress hook 订阅 SSE
-- 显示 Progress 组件 (0-100%)
-- 进度条上方: "下载中 45%"
-- 完成: 100%绿色进度条 + [⬇ 下载到本地] 按钮
-- 按钮: window.open(/api/downloads/{id}/file) 触发下载
-- 失败: 红色进度条 + 错误消息 + [重试] 按钮
+- 使用 useDownloadProgress(downloadId)
+- Progress 组件 (value = progress)
+- progress < 100: 显示 "{progress}%"
+- status="completed": Progress(100%, green) + "下载完成" + [⬇ 下载到本地] 按钮
+  - 按钮: window.open(/api/downloads/{downloadId}/file)
+- status="failed": Progress(red) + errorMessage + [重试] 按钮
 
-### components/download/DownloadCard.tsx — 组装容器
-- Card 组件包裹上述所有子组件
-- 状态机管理: 
+### src/components/download/DownloadCard.tsx — 组装容器
+- Card 包裹所有子组件
+- State machine:
   - idle: UrlInput + PlatformSelect + CookiesStatus
-  - ready: 已检测+有cookies -> 显示 ResolutionSelect + [开始下载]
-  - downloading: ProgressBar
-  - complete/failed: ProgressBar 最终态
-- [开始下载] 按钮: 调 submitDownload -> 获取 downloadId -> 切换到 downloading
+  - ready: 有 url + cookies → ResolutionSelect + [开始下载] 按钮
+  - downloading: ProgressBar (隐藏其他组件)
+  - complete/failed: ProgressBar 显示最终状态
+- [开始下载] onClick: submitDownload → 获取 downloadId → setPhase("downloading")
+
+git commit -m "feat: add download components (UrlInput, PlatformSelect, ResolutionSelect, CookiesStatus, ProgressBar, DownloadCard)"
 
 ---
 
-## Task 7: History 组件
+## Task 7: History 组件（2 个文件）
 
 **Dependencies:** Task 4 | **Parallelizable:** Yes
 
-### components/history/HistoryTable.tsx
+### src/components/history/HistoryTable.tsx
+- useState page=1
 - useQuery downloadHistory(page)
-- Table 组件，列: 平台, 链接(截断), 分辨率, 状态, 进度, 时间
+- Table 列: 平台, 链接(truncate 50 chars), 分辨率, 状态Badge, 进度, 创建时间
 - 分页: 上一页/下一页按钮
+- 行点击展开详情
 
-### components/history/HistoryRow.tsx
-- 状态badge: pending=灰色, processing=蓝色, completed=绿色, failed=红色
-- completed: [下载] 按钮 (window.open file)
-- failed: [重试] 按钮 (retry mutation)
-- 折叠详情: 展开显示完整URL和错误信息
+### src/components/history/HistoryRow.tsx
+- Props: download (DownloadResponse)
+- 状态 Badge: pending=gray, processing=blue, completed=green, failed=red
+- completed: [⬇ 下载] 按钮 → window.open(/api/downloads/{id}/file)
+- failed: [重试] 按钮 → retryDownload mutation
+
+git commit -m "feat: add history components (HistoryTable, HistoryRow)"
 
 ---
 
-## Task 8: Admin 组件
+## Task 8: Admin 组件（2 个文件）
 
 **Dependencies:** Task 4 | **Parallelizable:** Yes
 
-### components/admin/UserTable.tsx
-- useQuery listUsers
-- Table 列: 用户名, 备注, 状态, 创建时间, 操作
-- 操作: [禁用] 按钮 -> deleteUser mutation -> invalidate
+### src/components/admin/UserTable.tsx
+- useQuery listUsers()
+- Table 列: 用户名, 备注, 状态(Active/Disabled), 创建时间, 操作
+- 操作列: [禁用] 按钮 → deleteUser(id) → invalidate listUsers
+- 如果用户是 root: 操作列显示 "不可操作"
 
-### components/admin/CreateUserDialog.tsx
-- Dialog 弹窗，触发按钮 "创建用户"
-- 表单: username input, password input, note input
-- 提交: createUser mutation -> invalidate listUsers + close dialog
+### src/components/admin/CreateUserDialog.tsx
+- Dialog 触发按钮: "创建用户" (Plus icon)
+- 表单: username input + password input + note input
+- [创建] 按钮: createUser(username,password,note) → onSuccess: close dialog + invalidate listUsers
+- 显示 toast 成功/失败提示
+
+git commit -m "feat: add admin components (UserTable, CreateUserDialog)"
 
 ---
 
-## Task 9: Pages 页面（5个）
+## Task 9: Pages 页面（5 个文件）
 
-**Dependencies:** Task 5-8 | **Parallelizable:** No
+**Dependencies:** Task 5, 6, 7, 8 | **Parallelizable:** No（依赖所有组件）
 
-### pages/LoginPage.tsx
-- 全屏居中卡片，标题 "视频下载"
-- username + password 输入 + [登录] 按钮
-- useAuth().login 调用
-- 错误: 红色提示（用户名或密码错误 / 账号已被禁用）
-- 登录成功自动跳转 /
+### src/pages/LoginPage.tsx
+- 全屏居中布局（min-h-screen flex items-center justify-center）
+- Card: 标题 "视频下载" + 副标题 "请登录"
+- Form: username Input + password Input (type="password") + [登录] Button
+- 提交: useAuth().login(username, password)
+- 错误: Alert 显示错误信息
+- 成功后 navigate("/")
 
-### pages/HomePage.tsx
-- 标题 "视频下载"
+### src/pages/HomePage.tsx
+- 标题 "下载视频"
 - DownloadCard 组件
-- 简洁的单列布局
 
-### pages/HistoryPage.tsx
+### src/pages/HistoryPage.tsx
 - 标题 "下载历史"
 - HistoryTable 组件
 
-### pages/CookiesPage.tsx
+### src/pages/CookiesPage.tsx
 - 标题 "Cookies 管理"
-- 6平台网格布局 (3x2)
-- 每个平台卡片: 平台名 + 状态badge + 上传/删除按钮
-- 使用 useState 管理本地上传状态
+- 6 平台 2x3 网格布局
+- 每个平台卡片: 平台名 + 图标 + CookiesStatus 组件
 
-### pages/AdminPage.tsx
-- 仅 isRoot 渲染，否则重定向 /
-- 标题 "用户管理"
-- [创建用户] 按钮 -> CreateUserDialog
-- UserTable
+### src/pages/AdminPage.tsx
+- if (!isRoot) return Navigate to="/"
+- 标题 "用户管理" + [创建用户] 按钮
+- CreateUserDialog + UserTable
+
+git commit -m "feat: add all 5 pages"
 
 ---
 
-## Task 10: App.tsx 路由 + main.tsx 入口
+## Task 10: App.tsx 路由 + main.tsx 入口 + index.css
 
 **Dependencies:** Task 9 | **Parallelizable:** No
 
-### App.tsx
-- BrowserRouter -> AuthProvider -> QueryClientProvider -> Routes
-- Routes:
-  - /login -> LoginPage
-  - ProtectedRoute -> AppLayout (Outlet) ->
-    - / -> HomePage
-    - /history -> HistoryPage
-    - /cookies -> CookiesPage
-    - /admin -> AdminPage
-  - * -> Navigate to /
+### src/App.tsx
+`	sx
+<QueryClientProvider client={queryClient}>
+  <BrowserRouter>
+    <AuthProvider>
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+        <Route element={<ProtectedRoute />}>
+          <Route element={<AppLayout />}>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/history" element={<HistoryPage />} />
+            <Route path="/cookies" element={<CookiesPage />} />
+            <Route path="/admin" element={<AdminPage />} />
+          </Route>
+        </Route>
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </AuthProvider>
+  </BrowserRouter>
+</QueryClientProvider>
+`
 
-### main.tsx
-- createRoot, render App
-- import index.css
+### src/main.tsx
+- import App, createRoot, render
 
-### index.css
-- @tailwind base; @tailwind components; @tailwind utilities;
-- 基础 body 样式: font-family, bg-gray-50, text-gray-900
+### src/index.css
+- @tailwind base/components/utilities
+- body: font-family system, bg-gray-50, text-gray-900, antialiased
 
----
-
-## 前端后端接口对齐
-
-| 前端调用 | API 端点 | 请求 | 响应 |
-|----------|----------|------|------|
-| api/auth.login() | POST /api/auth/login | {username,password} | {token,user} |
-| api/auth.getMe() | GET /api/auth/me | — | {id,username,is_root,...} |
-| api/videos.detect() | POST /api/videos/detect | {url} | {detected,platforms} |
-| api/videos.getResolutions() | GET /api/videos/resolutions | ?platform=&url= | {resolutions:[{format_id,desc}]} |
-| api/downloads.submit() | POST /api/downloads | {url,platform,resolution} | {download_id} |
-| api/downloads.list() | GET /api/downloads | ?page=&page_size= | {items,total} |
-| api/downloads.getOne() | GET /api/downloads/{id} | — | DownloadResponse |
-| EventSource (SSE) | GET /api/downloads/{id}/progress | — | SSE {progress,status,...} |
-| window.open (下载) | GET /api/downloads/{id}/file | — | 文件流 |
-| api/downloads.retry() | POST /api/downloads/{id}/retry | — | {download_id} |
-| api/cookies.getStatus() | GET /api/cookies/status | — | {cookies:{platform:{...}}} |
-| api/cookies.upload() | POST /api/cookies/upload | FormData | {platform,message} |
-| api/cookies.remove() | DELETE /api/cookies/{platform} | — | {message} |
-| api/admin.listUsers() | GET /api/admin/users | — | {users,total} |
-| api/admin.createUser() | POST /api/admin/users | {username,password,note} | {id,username,message} |
-| api/admin.deleteUser() | DELETE /api/admin/users/{id} | — | {message} |
+git commit -m "feat: add routing, entry point, and global styles"
 
 ---
 
-**Execution Mode:** serial (Task 1->2->3+4->5->6->7+8->9->10)
+## 前端与后端接口完全对齐（16 个端点）
+
+| # | 前端调用（实现文件） | 后端端点 | HTTP 方法 | 请求 | 响应 |
+|---|---------------------|----------|-----------|------|------|
+| 1 | api/auth.ts:login() | /api/auth/login | POST | {username,password} | {token,user} |
+| 2 | api/auth.ts:getMe() | /api/auth/me | GET | — | {id,username,is_root,...} |
+| 3 | api/videos.ts:detect() | /api/videos/detect | POST | {url} | {detected,platforms} |
+| 4 | api/videos.ts:getResolutions() | /api/videos/resolutions | GET | ?platform=&url= | {resolutions:[{format_id,description}]} |
+| 5 | api/downloads.ts:submit() | /api/downloads | POST | {url,platform,resolution?} | {download_id} |
+| 6 | api/downloads.ts:list() | /api/downloads | GET | ?page=&page_size= | {items,total} |
+| 7 | api/downloads.ts:getOne() | /api/downloads/{id} | GET | — | {id,url,platform,status,...} |
+| 8 | useDownload.ts:EventSource | /api/downloads/{id}/progress | GET | — | SSE: {progress,status,...} |
+| 9 | ProgressBar:window.open() | /api/downloads/{id}/file | GET | — | 文件流下载 |
+| 10 | api/downloads.ts:retry() | /api/downloads/{id}/retry | POST | — | {download_id} |
+| 11 | api/cookies.ts:getStatus() | /api/cookies/status | GET | — | {cookies:{platform:{...}}} |
+| 12 | api/cookies.ts:upload() | /api/cookies/upload | POST | FormData(platform+file) | {platform,message} |
+| 13 | api/cookies.ts:remove() | /api/cookies/{platform} | DELETE | — | {message} |
+| 14 | api/admin.ts:listUsers() | /api/admin/users | GET | — | {users,total} |
+| 15 | api/admin.ts:createUser() | /api/admin/users | POST | {username,password,note} | {id,username,message} |
+| 16 | api/admin.ts:deleteUser() | /api/admin/users/{id} | DELETE | — | {message} |
+
+**验证结果：16/16 全部对齐 ✅**
+
+---
+
+**Execution Mode:** serial (Task 1→2→3+4→5→6→7+8→9→10)
