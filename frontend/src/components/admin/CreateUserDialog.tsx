@@ -22,15 +22,16 @@ export default function CreateUserDialog({ onCreated }: CreateUserDialogProps) {
     if (!username.trim() || !password.trim()) return
     setLoading(true)
     try {
-      await createUser(username.trim(), password, note.trim() || undefined)
+      await createUser(username.trim(), password, note.trim() || "")
       toast.success("用户创建成功")
       setOpen(false)
       setUsername("")
       setPassword("")
       setNote("")
       onCreated()
-    } catch {
-      toast.error("创建失败")
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail || "创建失败，请检查输入"
+      toast.error(msg as string)
     } finally {
       setLoading(false)
     }
@@ -51,30 +52,17 @@ export default function CreateUserDialog({ onCreated }: CreateUserDialogProps) {
         <div className="space-y-4">
           <div className="space-y-2">
             <Label>用户名</Label>
-            <Input
-              placeholder="输入用户名"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-            />
+            <Input placeholder="输入用户名" value={username} onChange={(e) => setUsername(e.target.value)} />
           </div>
           <div className="space-y-2">
             <Label>密码</Label>
-            <Input
-              type="password"
-              placeholder="输入密码"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
+            <Input type="password" placeholder="输入密码（至少6位）" value={password} onChange={(e) => setPassword(e.target.value)} />
           </div>
           <div className="space-y-2">
             <Label>备注（可选）</Label>
-            <Input
-              placeholder="备注信息"
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-            />
+            <Input placeholder="备注信息" value={note} onChange={(e) => setNote(e.target.value)} />
           </div>
-          <Button className="w-full" onClick={handleCreate} disabled={loading}>
+          <Button className="w-full" onClick={handleCreate} disabled={loading || !username.trim() || !password.trim()}>
             {loading ? "创建中..." : "创建"}
           </Button>
         </div>

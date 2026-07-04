@@ -1,57 +1,59 @@
-"""Authentication routes: login and current-user info."""
+﻿"""Authentication routes: login, me, change-password."""
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
-from app.core.auth import (
-    create_access_token,
-    get_current_user,
-    verify_password,
-)
 from app.database import get_db
 from app.models.user import User
-from app.schemas.auth import LoginRequest, LoginResponse, UserInfo
+from app.core.auth import (
+    verify_password, create_access_token,
+    get_current_user,
+    hash_password,
+)
+from app.schemas.auth import LoginRequest, LoginResponse, UserInfo, ChangePasswordRequest
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 
 @router.post("/login", response_model=LoginResponse)
-async def login(body: LoginRequest, db=Depends(get_db)):
-    """Authenticate a user and return a JWT token."""
-    result = await db.execute(select(User).where(User.username == body.username))
-    user = result.scalar_one_or_none()
-
-    if user is None or not verify_password(body.password, user.password_hash):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="用户名或密码错误",
-        )
-
-    if not user.is_active:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="账号已被禁用",
-        )
-
-    token = create_access_token(user.id, user.is_root)
-    return LoginResponse(
-        token=token,
-        user=UserInfo(
-            id=user.id,
-            username=user.username,
-            is_root=user.is_root,
-            note=user.note,
-            created_at=user.created_at.isoformat() if user.created_at else None,
-        ),
+async def login(
+    body: LoginRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(
+        select(User).where(User.username == body.username)
     )
+    user = result.scalar_one_or_none()
+    if user is None or not verify_password(body.password, user.password_hash):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="用户名或密码错误")
+    if not user.is_active:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="账号已被禁用")
+    token = create_access_token(user.id, user.is_root)
+    return LoginResponse(token=token, user=UserInfo(
+        id=user.id, username=user.username, is_root=user.is_root,
+        note=user.note, created_at=user.created_at.isoformat() if user.created_at else None,
+    ))
 
 
 @router.get("/me", response_model=UserInfo)
-async def me(current_user: User = Depends(get_current_user)):
-    """Return the currently logged-in user's info."""
+async def get_me(current_user: User = Depends(get_current_user)):
     return UserInfo(
-        id=current_user.id,
-        username=current_user.username,
-        is_root=current_user.is_root,
-        note=current_user.note,
+        id=current_user.id, username=current_user.username,
+        is_root=current_user.is_root, note=current_user.note,
         created_at=current_user.created_at.isoformat() if current_user.created_at else None,
     )
+
+
+@router.post("/change-password")
+async def change_password(
+    body: ChangePasswordRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    if not verify_password(body.old_password, current_user.password_hash):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="原密码错误")
+    if body.old_password == body.new_password:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="新密码不能与原密码相同")
+    current_user.password_hash = hash_password(body.new_password)
+    await db.commit()
+    return {"message": "密码修改成功"}

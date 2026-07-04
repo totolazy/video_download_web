@@ -1,6 +1,10 @@
-"""Authentication schemas: login request/response, user info."""
-from datetime import datetime
-from pydantic import BaseModel
+﻿"""Authentication Pydantic schemas."""
+from pydantic import BaseModel, Field
+
+
+class ChangePasswordRequest(BaseModel):
+    old_password: str = Field(..., min_length=1)
+    new_password: str = Field(..., min_length=6, max_length=128)
 
 
 class LoginRequest(BaseModel):
@@ -14,9 +18,6 @@ class UserInfo(BaseModel):
     is_root: bool
     note: str
     created_at: str | None
-
-    class Config:
-        from_attributes = True
 
 
 class LoginResponse(BaseModel):

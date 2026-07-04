@@ -82,7 +82,7 @@ export default function DownloadCard() {
     }
   }
 
-  const canDownload = !!url && !!platform && hasCookies && resolutionsReady
+  const canDownload = !!url && !!platform && hasCookies
 
   return (
     <Card>
@@ -164,3 +164,4 @@ export default function DownloadCard() {
     </Card>
   )
 }
+

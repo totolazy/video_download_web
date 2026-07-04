@@ -10,3 +10,5 @@ server_pids.txt
 .env
 
 venv/
+
+logs/

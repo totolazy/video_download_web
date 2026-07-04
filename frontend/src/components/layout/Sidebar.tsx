@@ -1,8 +1,10 @@
-﻿import { NavLink } from "react-router-dom"
+﻿import { useState } from "react"
+import { NavLink } from "react-router-dom"
 import { useAuth } from "@/hooks/useAuth"
-import { Download, Clock, Cookie, Shield, LogOut } from "lucide-react"
+import { Download, Clock, Cookie, Shield, LogOut, Key } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
+import ChangePasswordDialog from "./ChangePasswordDialog"
 
 const navItems = [
   { to: "/", label: "下载视频", icon: Download },
@@ -12,6 +14,7 @@ const navItems = [
 
 export default function Sidebar() {
   const { user, isRoot, logout } = useAuth()
+  const [pwdOpen, setPwdOpen] = useState(false)
 
   return (
     <aside className="fixed left-0 top-0 flex h-screen w-64 flex-col border-r bg-card">
@@ -56,11 +59,17 @@ export default function Sidebar() {
       </nav>
       <Separator />
       <div className="flex items-center justify-between p-3">
-        <span className="text-sm text-muted-foreground truncate max-w-[140px]">{user?.username}</span>
-        <Button variant="ghost" size="icon" onClick={logout} title="退出登录">
-          <LogOut className="h-4 w-4" />
-        </Button>
+        <span className="text-sm text-muted-foreground truncate max-w-[120px]">{user?.username}</span>
+        <div className="flex items-center gap-1">
+          <Button variant="ghost" size="icon" onClick={() => setPwdOpen(true)} title="修改密码">
+            <Key className="h-4 w-4" />
+          </Button>
+          <Button variant="ghost" size="icon" onClick={logout} title="退出登录">
+            <LogOut className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
+      <ChangePasswordDialog open={pwdOpen} onOpenChange={setPwdOpen} />
     </aside>
   )
 }

@@ -11,17 +11,24 @@ interface UrlInputProps {
 export default function UrlInput({ onDetected }: UrlInputProps) {
   const [url, setUrl] = useState("")
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [hint, setHint] = useState<string | null>(null)
 
   const handleDetect = async () => {
     if (!url.trim()) return
-    setError(null)
+    setHint(null)
     setLoading(true)
     try {
       const result = await detect(url.trim())
-      onDetected(result.detected ?? "", result.platforms, url.trim())
+      setHint(null) // clear any previous hint
+      try {
+        onDetected(result.detected ?? "", result.platforms, url.trim())
+      } catch {
+        // onDetected callback may fail (e.g. cookies refetch), but detection itself succeeded
+        setHint("")
+      }
     } catch {
-      setError("URL 检测失败，请检查链接是否正确")
+      // detect() API call failed
+      setHint("请检查链接是否正确")
     } finally {
       setLoading(false)
     }
@@ -38,7 +45,7 @@ export default function UrlInput({ onDetected }: UrlInputProps) {
         <Input
           placeholder="粘贴视频链接，如 https://www.youtube.com/watch?v=..."
           value={url}
-          onChange={(e) => setUrl(e.target.value)}
+          onChange={(e) => { setUrl(e.target.value); setHint(null) }}
           onKeyDown={handleKeyDown}
           className="flex-1"
         />
@@ -47,7 +54,7 @@ export default function UrlInput({ onDetected }: UrlInputProps) {
           检测
         </Button>
       </div>
-      {error && <p className="text-sm text-destructive">{error}</p>}
+      {hint && <p className="text-sm text-gray-400">{hint}</p>}
     </div>
   )
 }
