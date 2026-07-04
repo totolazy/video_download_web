@@ -41,3 +41,30 @@ INFO:     127.0.0.1:12854 - "POST /api/admin/users HTTP/1.1" 500 Internal Server
 INFO:     127.0.0.1:12858 - "POST /api/admin/users HTTP/1.1" 500 Internal Server Error
 INFO:     127.0.0.1:12860 - "POST /api/admin/users HTTP/1.1" 500 Internal Server Error
 INFO:     127.0.0.1:12862 - "POST /api/admin/users HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:13216 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:13218 - "GET /api/admin/users HTTP/1.1" 200 OK
+INFO:     127.0.0.1:13231 - "POST /api/admin/users HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:13251 - "POST /api/admin/users HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:13262 - "POST /api/admin/users HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:13264 - "GET /api/cookies/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:13288 - "POST /api/videos/detect HTTP/1.1" 200 OK
+INFO:     127.0.0.1:13290 - "GET /api/videos/resolutions?platform=bilibili&url=https:%2F%2Fwww.bilibili.com%2Fvideo%2FBV14BLM6VEb6%2F%3Fspm_id_from%3D333.1007.tianma.1-1-1.click%26vd_source%3D1196931059edaff5f7e39d107c60ab0d HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:13293 - "GET /api/videos/resolutions?platform=bilibili&url=https:%2F%2Fwww.bilibili.com%2Fvideo%2FBV14BLM6VEb6%2F%3Fspm_id_from%3D333.1007.tianma.1-1-1.click%26vd_source%3D1196931059edaff5f7e39d107c60ab0d HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:13295 - "POST /api/downloads HTTP/1.1" 200 OK
+INFO:     127.0.0.1:13297 - "GET /api/downloads/1/progress HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:13314 - "GET /api/admin/users HTTP/1.1" 200 OK
+INFO:     127.0.0.1:13317 - "DELETE /api/admin/users/1 HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:13319 - "DELETE /api/admin/users/1 HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:13321 - "GET /api/cookies/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:13323 - "GET /api/downloads?page=1&page_size=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:13326 - "GET /api/downloads?page=1&page_size=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:13331 - "POST /api/downloads/1/retry HTTP/1.1" 200 OK
+INFO:     127.0.0.1:13334 - "POST /api/downloads/1/retry HTTP/1.1" 200 OK
+INFO:     127.0.0.1:13336 - "POST /api/downloads/1/retry HTTP/1.1" 200 OK
+INFO:     127.0.0.1:13338 - "POST /api/downloads/1/retry HTTP/1.1" 200 OK
+INFO:     127.0.0.1:13341 - "POST /api/downloads/1/retry HTTP/1.1" 200 OK
+INFO:     127.0.0.1:13343 - "POST /api/downloads/1/retry HTTP/1.1" 200 OK
+INFO:     127.0.0.1:13345 - "POST /api/downloads/1/retry HTTP/1.1" 200 OK
+INFO:     127.0.0.1:13528 - "POST /api/auth/login HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:13676 - "POST /api/auth/login HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:13677 - "POST /api/admin/users HTTP/1.1" 401 Unauthorized

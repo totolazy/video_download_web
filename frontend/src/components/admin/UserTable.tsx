@@ -1,105 +1,109 @@
-﻿import { useQuery } from "@tanstack/react-query"
-import { listUsers, deleteUser } from "@/api/admin"
+﻿import { useState } from "react"
+import { useQuery } from "@tanstack/react-query"
+import { listUsers, deleteUser, resetPassword } from "@/api/admin"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { toast } from "sonner"
+import { Key, Trash2, Loader2 } from "lucide-react"
 import { formatDate } from "@/lib/utils"
-import { Ban, Loader2 } from "lucide-react"
 
-interface UserTableProps {
-  refreshKey: number
-}
+export default function UserTable() {
+  const { data, refetch } = useQuery({ queryKey: ["adminUsers"], queryFn: listUsers })
+  const [resetUser, setResetUser] = useState<{ id: number; username: string } | null>(null)
+  const [newPwd, setNewPwd] = useState("")
+  const [resetting, setResetting] = useState(false)
 
-export default function UserTable({ refreshKey }: UserTableProps) {
-  const { data, isLoading, refetch } = useQuery({
-    queryKey: ["adminUsers", refreshKey],
-    queryFn: () => listUsers(),
-  })
-
-  const users = data?.users ?? []
-
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: number, username: string) => {
     try {
       await deleteUser(id)
+      toast.success(`用户 ${username} 已禁用`)
       refetch()
-    } catch {
-      // handle silently
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail || "操作失败"
+      toast.error(msg as string)
     }
   }
 
-  if (isLoading) {
-    return (
-      <div className="flex justify-center py-8">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-      </div>
-    )
+  const handleReset = async () => {
+    if (!resetUser || !newPwd || newPwd.length < 6) {
+      toast.error("新密码至少 6 位")
+      return
+    }
+    setResetting(true)
+    try {
+      await resetPassword(resetUser.id, newPwd)
+      toast.success(`用户 ${resetUser.username} 密码已重置`)
+      setResetUser(null)
+      setNewPwd("")
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail || "操作失败"
+      toast.error(msg as string)
+    } finally {
+      setResetting(false)
+    }
   }
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>用户名</TableHead>
-          <TableHead>备注</TableHead>
-          <TableHead>状态</TableHead>
-          <TableHead>角色</TableHead>
-          <TableHead>创建时间</TableHead>
-          <TableHead>操作</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {users.length === 0 ? (
+    <>
+      <Table>
+        <TableHeader>
           <TableRow>
-            <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
-              暂无用户
-            </TableCell>
+            <TableHead>用户名</TableHead>
+            <TableHead>备注</TableHead>
+            <TableHead>状态</TableHead>
+            <TableHead>创建时间</TableHead>
+            <TableHead className="w-[160px]">操作</TableHead>
           </TableRow>
-        ) : (
-          users.map((u: {
-            id: number
-            username: string
-            note?: string
-            is_active: boolean
-            is_root: boolean
-            created_at: string
-          }) => (
+        </TableHeader>
+        <TableBody>
+          {data?.users.map((u: { id: number; username: string; note: string; is_active: boolean; created_at: string | null }) => (
             <TableRow key={u.id}>
               <TableCell className="font-medium">{u.username}</TableCell>
               <TableCell className="text-muted-foreground">{u.note || "-"}</TableCell>
               <TableCell>
-                <Badge variant={u.is_active ? "outline" : "destructive"}>
+                <Badge variant={u.is_active ? "default" : "destructive"}>
                   {u.is_active ? "正常" : "已禁用"}
                 </Badge>
               </TableCell>
+              <TableCell className="text-sm text-muted-foreground">{u.created_at ? formatDate(u.created_at) : "-"}</TableCell>
               <TableCell>
-                {u.is_root ? (
-                  <Badge variant="secondary">管理员</Badge>
-                ) : (
-                  <span className="text-sm text-muted-foreground">普通用户</span>
-                )}
-              </TableCell>
-              <TableCell className="text-xs text-muted-foreground">
-                {formatDate(u.created_at)}
-              </TableCell>
-              <TableCell>
-                {u.is_root ? (
-                  <span className="text-xs text-muted-foreground">不可操作</span>
-                ) : (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleDelete(u.id)}
-                    disabled={!u.is_active}
-                  >
-                    <Ban className="h-4 w-4 mr-1" />
+                <div className="flex gap-1">
+                  <Button variant="ghost" size="sm" onClick={() => setResetUser({ id: u.id, username: u.username })} disabled={u.username === "root"}>
+                    <Key className="h-3 w-3 mr-1" />
+                    重置密码
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={() => handleDelete(u.id, u.username)} disabled={u.username === "root" || !u.is_active}>
+                    <Trash2 className="h-3 w-3 mr-1" />
                     禁用
                   </Button>
-                )}
+                </div>
               </TableCell>
             </TableRow>
-          ))
-        )}
-      </TableBody>
-    </Table>
+          ))}
+        </TableBody>
+      </Table>
+
+      <Dialog open={!!resetUser} onOpenChange={(open) => { if (!open) { setResetUser(null); setNewPwd("") } }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>重置密码 - {resetUser?.username}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>新密码（至少 6 位）</Label>
+              <Input type="password" placeholder="输入新密码" value={newPwd} onChange={(e) => setNewPwd(e.target.value)} autoFocus />
+            </div>
+            <Button className="w-full" onClick={handleReset} disabled={resetting || !newPwd || newPwd.length < 6}>
+              {resetting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              确认重置
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   )
 }

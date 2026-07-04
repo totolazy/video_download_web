@@ -1,4 +1,5 @@
-"""Admin routes: user management (root-only)."""
+﻿"""Admin routes: user management + password reset (root-only)."""
+from pydantic import BaseModel, Field
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import func, select
 
@@ -12,6 +13,11 @@ from app.schemas.admin import (
     UserListResponse,
 )
 
+
+class AdminChangePasswordSchema(BaseModel):
+    new_password: str = Field(..., min_length=6, max_length=128)
+
+
 router = APIRouter(prefix="/api/admin", tags=["admin"])
 
 
@@ -20,15 +26,10 @@ async def list_users(
     db=Depends(get_db),
     _root: User = Depends(require_root),
 ):
-    """List all users (root only)."""
     count_result = await db.execute(select(func.count(User.id)))
     total = count_result.scalar() or 0
-
-    result = await db.execute(
-        select(User).order_by(User.created_at.desc())
-    )
+    result = await db.execute(select(User).order_by(User.created_at.desc()))
     users = result.scalars().all()
-
     return UserListResponse(
         users=[UserListItem.model_validate(u.to_admin_dict()) for u in users],
         total=total,
@@ -41,16 +42,9 @@ async def create_user(
     db=Depends(get_db),
     _root: User = Depends(require_root),
 ):
-    """Create a new user (root only)."""
-    # Check duplicate
-    result = await db.execute(
-        select(User).where(User.username == body.username)
-    )
+    result = await db.execute(select(User).where(User.username == body.username))
     if result.scalar_one_or_none():
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="用户名已存在",
-        )
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="用户名已存在")
 
     user = User(
         username=body.username,
@@ -61,12 +55,7 @@ async def create_user(
     db.add(user)
     await db.commit()
     await db.refresh(user)
-
-    return CreateUserResponse(
-        id=user.id,
-        username=user.username,
-        message=f"用户 {user.username} 创建成功",
-    )
+    return CreateUserResponse(id=user.id, username=user.username, message=f"用户 {user.username} 创建成功")
 
 
 @router.delete("/users/{user_id}")
@@ -75,21 +64,28 @@ async def delete_user(
     db=Depends(get_db),
     _root: User = Depends(require_root),
 ):
-    """Soft-delete (disable) a user (root only). Cannot disable root."""
     user = await db.get(User, user_id)
     if user is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="用户不存在",
-        )
-
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="用户不存在")
     if user.is_root:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="无法禁用 root 用户",
-        )
-
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="无法禁用 root 用户")
     user.is_active = False
     await db.commit()
-
     return {"message": f"用户 {user.username} 已被禁用"}
+
+
+@router.post("/users/{user_id}/change-password")
+async def admin_change_password(
+    user_id: int,
+    body: AdminChangePasswordSchema,
+    db=Depends(get_db),
+    _root: User = Depends(require_root),
+):
+    """Admin resets any user's password (root only)."""
+    user = await db.get(User, user_id)
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="用户不存在")
+
+    user.password_hash = hash_password(body.new_password)
+    await db.commit()
+    return {"message": f"用户 {user.username} 的密码已重置"}
