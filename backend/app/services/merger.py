@@ -1,5 +1,5 @@
 """ffmpeg merger: combine separate audio+video streams when yt-dlp needs it."""
-import asyncio
+import asyncio, os, shutil, sys
 from pathlib import Path
 
 
@@ -14,7 +14,7 @@ async def merge_audio_video(
     """
     try:
         process = await asyncio.create_subprocess_exec(
-            "ffmpeg",
+            shutil.which("ffmpeg") or os.path.join(os.path.dirname(sys.executable), "ffmpeg.exe") if sys.platform == "win32" else "ffmpeg",
             "-i", str(video_path),
             "-i", str(audio_path),
             "-c:v", "copy",

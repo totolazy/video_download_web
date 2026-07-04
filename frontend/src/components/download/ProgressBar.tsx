@@ -1,14 +1,15 @@
-﻿import { useDownloadProgress } from "@/hooks/useDownload"
+import { useDownloadProgress } from "@/hooks/useDownload"
 import { Progress } from "@/components/ui/progress"
 import { Button } from "@/components/ui/button"
 import { Download, RotateCw, AlertCircle } from "lucide-react"
 
 interface ProgressBarProps {
   downloadId: number | null
+  onReset?: () => void
   onRetry?: () => void
 }
 
-export default function ProgressBar({ downloadId, onRetry }: ProgressBarProps) {
+export default function ProgressBar({ downloadId, onReset, onRetry }: ProgressBarProps) {
   const { progress, status, fileName, errorMessage } = useDownloadProgress(downloadId)
 
   if (!downloadId) return null
@@ -31,7 +32,7 @@ export default function ProgressBar({ downloadId, onRetry }: ProgressBarProps) {
       {isCompleted && (
         <Button
           className="w-full"
-          onClick={() => window.open(`/api/downloads/${downloadId}/file`)}
+          onClick={() => window.open("/api/downloads/" + downloadId + "/file?token=" + encodeURIComponent(localStorage.getItem("token") || ""))}
         >
           <Download className="h-4 w-4 mr-2" />
           下载到本地
@@ -44,10 +45,17 @@ export default function ProgressBar({ downloadId, onRetry }: ProgressBarProps) {
             {errorMessage || "下载失败"}
           </div>
           {onRetry && (
-            <Button variant="outline" size="sm" onClick={onRetry}>
-              <RotateCw className="h-4 w-4 mr-2" />
-              重试
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={onRetry}>
+                <RotateCw className="h-4 w-4 mr-2" />
+                重试
+              </Button>
+              {onReset && (
+                <Button variant="ghost" size="sm" onClick={onReset}>
+                  重新开始
+                </Button>
+              )}
+            </div>
           )}
         </div>
       )}

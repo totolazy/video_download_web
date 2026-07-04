@@ -1,5 +1,5 @@
-﻿"""Video routes: URL platform detection and resolution listing."""
-import asyncio
+"""Video routes: URL platform detection and resolution listing."""
+import asyncio, os, shutil, sys
 import logging
 import re
 
@@ -60,7 +60,7 @@ async def resolutions(
         # Fallback: try filesystem
         from app.config import settings
         from pathlib import Path
-        cookie_file = settings.COOKIES_DIR / str(current_user.id) / platform / "cookies.txt"
+        cookie_file = settings.COOKIES_DIR / current_user.username / platform / "cookies.txt"
         if cookie_file.exists():
             cookies_path = str(cookie_file)
         else:
@@ -73,8 +73,9 @@ async def resolutions(
 
     process = None
     try:
+        ytdlp = shutil.which("yt-dlp") or os.path.join(os.path.dirname(sys.executable), "yt-dlp.exe")
         process = await asyncio.create_subprocess_exec(
-            "yt-dlp", "-F", url,
+            ytdlp, "-F", url,
             "--cookies", cookies_path,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,

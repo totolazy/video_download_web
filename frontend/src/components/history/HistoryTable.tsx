@@ -1,8 +1,9 @@
-﻿import { PLATFORMS } from "@/lib/constants"
+import { PLATFORMS } from "@/lib/constants"
 import { formatDate } from "@/lib/utils"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Progress } from "@/components/ui/progress"
 import { Download, RotateCw } from "lucide-react"
 
 const statusColors: Record<string, string> = {
@@ -28,6 +29,7 @@ interface HistoryRowProps {
     status: string
     progress: number
     file_name?: string
+    error_message?: string
     created_at: string
   }
   onRetry?: (id: number) => void
@@ -36,11 +38,18 @@ interface HistoryRowProps {
 export function HistoryRow({ download, onRetry }: HistoryRowProps) {
   const platformLabel = PLATFORMS[download.platform] || download.platform
   const truncatedUrl = download.url.length > 50 ? download.url.slice(0, 50) + "..." : download.url
+  const isFailed = download.status === "failed"
+  const isCompleted = download.status === "completed"
+  const isProcessing = download.status === "processing" || download.status === "pending"
+
+  const handleDownload = () => {
+    window.open("/api/downloads/" + download.id + "/file?token=" + encodeURIComponent(localStorage.getItem("token") || ""))
+  }
 
   return (
     <TableRow>
-      <TableCell>{platformLabel}</TableCell>
-      <TableCell className="max-w-[300px] truncate" title={download.url}>
+      <TableCell className="font-medium">{platformLabel}</TableCell>
+      <TableCell className="max-w-[200px] truncate" title={download.url}>
         {truncatedUrl}
       </TableCell>
       <TableCell>{download.resolution || "-"}</TableCell>
@@ -49,22 +58,28 @@ export function HistoryRow({ download, onRetry }: HistoryRowProps) {
           {statusLabels[download.status] || download.status}
         </Badge>
       </TableCell>
-      <TableCell>
-        {download.progress > 0 && download.progress < 100 ? `${download.progress}%` : "-"}
+      <TableCell className="w-[120px]">
+        {isProcessing ? (
+          <div className="space-y-1">
+            <Progress value={download.progress} className="h-2" />
+            <span className="text-xs text-muted-foreground">{download.progress}%</span>
+          </div>
+        ) : (
+          <span className="text-xs text-muted-foreground">-</span>
+        )}
       </TableCell>
       <TableCell className="text-xs text-muted-foreground">
         {formatDate(download.created_at)}
       </TableCell>
       <TableCell>
         <div className="flex gap-1">
-          {download.status === "completed" && (
-            <Button variant="ghost" size="icon" title="下载到本地"
-              onClick={() => window.open(`/api/downloads/${download.id}/file`)}>
+          {isCompleted && (
+            <Button variant="ghost" size="icon" title="下载到本地" onClick={handleDownload}>
               <Download className="h-4 w-4" />
             </Button>
           )}
-          {download.status === "failed" && onRetry && (
-            <Button variant="ghost" size="icon" title="重试" onClick={() => onRetry(download.id)}>
+          {(isFailed || (isCompleted && download.error_message?.includes("过期"))) && onRetry && (
+            <Button variant="ghost" size="icon" title="重新下载" onClick={() => onRetry(download.id)}>
               <RotateCw className="h-4 w-4" />
             </Button>
           )}

@@ -1,5 +1,5 @@
 """Download orchestrator: create tasks, run yt-dlp, update progress in DB."""
-import asyncio
+import asyncio, os, shutil, sys
 import glob
 from datetime import datetime, timezone
 from pathlib import Path
@@ -67,9 +67,13 @@ async def _run_download(
     output_dir = settings.VIDEOS_DIR / str(download_id)
     output_dir.mkdir(parents=True, exist_ok=True)
 
+    # Normalize resolution: "best"/"default" -> None (strategy picks default)
+    if resolution in ("best", "default", ""):
+        resolution = None
     try:
         strategy = get_strategy(platform)
-        args = ["yt-dlp"] + strategy.build_args(
+        ytdlp = shutil.which("yt-dlp") or os.path.join(os.path.dirname(sys.executable), "yt-dlp.exe")
+        args = [ytdlp] + strategy.build_args(
             url=url,
             cookies_path=cookies_path,
             resolution=resolution,

@@ -1,55 +1,114 @@
-@echo off
+﻿@echo off
 chcp 65001 >nul
-title ?????? - ????
-color 0b
+title Video Download - One Click Start
 
-echo ==================================================
-echo   ?????? - ????
-echo ==================================================
+echo ========================================
+echo   Video Download Site - Startup
+echo ========================================
 echo.
-echo [0/4] ?? yt-dlp...
-cd /d "%~dp0backend"
-"venv\Scripts\python.exe" -m pip install -q yt-dlp bcrypt >nul 2>&1
-echo       OK!
 
-echo [1/4] ??????...
-"venv\Scripts\python.exe" -c "import asyncio;from app.database import init_db;asyncio.run(init_db())" > "..\logs\database\init.log" 2>&1
-echo       OK! ??: logs\database\init.log
+set "ROOT=%~dp0"
+set "VENV=%ROOT%venv"
+set "BACKEND=%ROOT%backend"
+set "FRONTEND=%ROOT%frontend"
+set "PYTHON=%VENV%\Scripts\python.exe"
+set "LOGDIR=%ROOT%logs"
+set "DBLOG=%LOGDIR%\database\init.log"
 
-echo [2/4] ???? FastAPI (port 8000)...
-start "VDL-Backend" /MIN cmd /c "cd /d "%~dp0" && "venv\Scripts\python.exe" -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --log-level info > "..\logs\backend\server.log" 2>&1"
-echo       ?????... ??: logs\backend\server.log
+:: Create log dirs
+if not exist "%LOGDIR%\backend" mkdir "%LOGDIR%\backend" 2>nul
+if not exist "%LOGDIR%\frontend" mkdir "%LOGDIR%\frontend" 2>nul
+if not exist "%LOGDIR%\database" mkdir "%LOGDIR%\database" 2>nul
 
-echo [3/4] ???? Vite (port 5173)...
-cd /d "%~dp0..\frontend"
-start "VDL-Frontend" /MIN cmd /c "npx vite --host 127.0.0.1 --port 5173 > "..\logs\frontend\server.log" 2>&1"
-echo       ?????... ??: logs\frontend\server.log
+:: ===== Step 1: Venv =====
+echo [1/5] Checking Python virtual environment...
+if not exist "%PYTHON%" (
+    echo   Creating venv...
+    cd /d "%ROOT%"
+    python -m venv venv
+    if %errorlevel% neq 0 (
+        echo   [FAIL] Cannot create venv. Is Python 3.11+ installed?
+        pause
+        exit /b 1
+    )
+    echo   Done.
+) else (
+    echo   Already exists.
+)
 
-echo [4/4] ?????? (8?)...
+:: ===== Step 2: Backend deps =====
+echo [2/5] Installing backend dependencies...
+"%PYTHON%" -m pip install -r "%BACKEND%\requirements.txt" -i https://pypi.tuna.tsinghua.edu.cn/simple -q
+if %errorlevel% neq 0 (
+    echo   Mirror failed, trying default...
+    "%PYTHON%" -m pip install -r "%BACKEND%\requirements.txt" -q
+)
+"%PYTHON%" -m pip install yt-dlp -i https://pypi.tuna.tsinghua.edu.cn/simple -q
+if %errorlevel% neq 0 (
+    "%PYTHON%" -m pip install yt-dlp -q
+)
+echo   Done.
+
+:: Verify bcrypt
+"%PYTHON%" -c "import bcrypt; h=bcrypt.hashpw(b'test',bcrypt.gensalt()); assert bcrypt.checkpw(b'test',h)" >nul 2>&1
+if %errorlevel% neq 0 (
+    echo   [WARN] bcrypt broken, reinstalling...
+    "%PYTHON%" -m pip uninstall bcrypt passlib -y -q 2>nul
+    "%PYTHON%" -m pip install bcrypt==4.0.1 -q
+)
+
+:: ===== Step 3: Frontend deps =====
+echo [3/5] Installing frontend dependencies...
+cd /d "%FRONTEND%"
+if not exist node_modules (
+    call npm install --silent
+    echo   Done.
+) else (
+    echo   Already exists.
+)
+
+:: ===== Step 4: Init DB =====
+echo [4/5] Initializing database...
+cd /d "%BACKEND%"
+"%PYTHON%" -c "import asyncio; from app.database import init_db; asyncio.run(init_db()); print('OK')" > "%DBLOG%" 2>&1
+if %errorlevel% neq 0 (
+    echo   [FAIL] DB init failed. See logs\database\init.log
+    pause
+    exit /b 1
+)
+echo   Database ready.
+
+:: ===== Step 5: Start servers (background) =====
+echo [5/5] Starting servers...
+cd /d "%ROOT%"
+
+:: Kill old
+for /f "tokens=5" %%a in ('netstat -ano ^| findstr ":8000.*LISTENING" 2^>nul') do taskkill /F /PID %%a >nul 2>&1
+for /f "tokens=5" %%a in ('netstat -ano ^| findstr ":5173.*LISTENING" 2^>nul') do taskkill /F /PID %%a >nul 2>&1
+timeout /t 1 /nobreak >nul
+
+:: Start backend (background via start)
+echo   Starting backend on port 8000...
+start "Backend" /MIN "%PYTHON%" -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload --log-level warning
+
+:: Start frontend (background via start)
+echo   Starting frontend on port 5173...
+start "Frontend" /MIN cmd /c "cd /d %FRONTEND% && npx vite --host 127.0.0.1 --port 5173"
+
+:: Wait for startup
+echo   Waiting for servers...
 timeout /t 8 /nobreak >nul
 
-echo       ?????...
-start http://127.0.0.1:5173
-
 echo.
-echo ==================================================
-echo   ????:  http://127.0.0.1:5173
-echo   ?? API:  http://127.0.0.1:8000/docs
+echo ========================================
+echo   Startup complete!
 echo.
-echo   ????:  root / Admin123!
+echo   Backend:  http://127.0.0.1:8000
+echo   Frontend: http://127.0.0.1:5173
+echo   Login:    root / Admin123!
 echo.
-echo   ????:
-echo     ??:  logs\backend\server.log
-echo     ??:  logs\frontend\server.log  
-echo     ???: logs\database\init.log
+echo   Logs:     logs\
+echo ========================================
 echo.
-echo   ????:
-echo     Python --^> backend\venv (????)
-echo     Node   --^> frontend\node_modules
-echo   ??????????
-echo.
-echo   ??: ?? "VDL-Backend" ? "VDL-Frontend" ??
-echo   ??: ?? test_cleanup.bat
-echo ==================================================
-
+start "" http://127.0.0.1:5173
 pause

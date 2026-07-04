@@ -19,7 +19,11 @@ export default function UrlInput({ onDetected }: UrlInputProps) {
     setLoading(true)
     try {
       const result = await detect(url.trim())
-      setHint(null) // clear any previous hint
+      if (!result.detected) {
+        setHint("请检查平台是否正确")
+      } else {
+        setHint(null)
+      }
       try {
         onDetected(result.detected ?? "", result.platforms, url.trim())
       } catch {
@@ -28,7 +32,7 @@ export default function UrlInput({ onDetected }: UrlInputProps) {
       }
     } catch {
       // detect() API call failed
-      setHint("请检查链接是否正确")
+      setHint("请检查平台是否正确")
     } finally {
       setLoading(false)
     }

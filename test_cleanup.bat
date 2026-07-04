@@ -1,59 +1,39 @@
-@echo off
+﻿@echo off
 chcp 65001 >nul
-title ??????
-color 0e
+title Video Download - Cleanup
 
-echo ==================================================
-echo   ????????
-echo ==================================================
+echo ========================================
+echo   Video Download Site - Cleanup
+echo ========================================
 echo.
 
-echo [1/5] ????????...
-taskkill /fi "WINDOWTITLE eq VideoDL-Backend*" /f >nul 2>&1
-taskkill /fi "WINDOWTITLE eq VideoDL-Frontend*" /f >nul 2>&1
-echo       OK
+set "ROOT=%~dp0"
 
-echo [2/5] ?? Python ????...
-set "VENV_DIR=%~dp0backend\venv"
-if exist "%VENV_DIR%" (
-    rmdir /s /q "%VENV_DIR%"
-    echo       OK - backend\venv ???
-) else (
-    echo       ?? - venv ???
-)
+:: Kill servers
+echo [1/3] Stopping servers...
+for /f "tokens=5" %%a in ('netstat -ano ^| findstr ":8000" 2^>nul') do taskkill /F /PID %%a >nul 2>&1
+for /f "tokens=5" %%a in ('netstat -ano ^| findstr ":5173" 2^>nul') do taskkill /F /PID %%a >nul 2>&1
+echo   Done.
 
-echo [3/5] ?? node_modules...
-set "NM_DIR=%~dp0frontend\node_modules"
-if exist "%NM_DIR%" (
-    rmdir /s /q "%NM_DIR%"
-    echo       OK - frontend\node_modules ???
-) else (
-    echo       ?? - node_modules ???
-)
+:: Clean data
+echo [2/3] Cleaning data...
+if exist "%ROOT%data\app.db" del /q "%ROOT%data\app.db" 2>nul
+if exist "%ROOT%data\videos" rmdir /s /q "%ROOT%data\videos" 2>nul & mkdir "%ROOT%data\videos" 2>nul
+if exist "%ROOT%data\cookies" rmdir /s /q "%ROOT%data\cookies" 2>nul & mkdir "%ROOT%data\cookies" 2>nul
+echo   Done.
 
-echo [4/5] ?? Python ?????????...
-for /d /r "%~dp0backend" %%d in (__pycache__) do @if exist "%%d" rmdir /s /q "%%d"
-if exist "%~dp0frontend\dist" rmdir /s /q "%~dp0frontend\dist"
-if exist "%~dp0frontend\package-lock.json" del /q "%~dp0frontend\package-lock.json"
-echo       OK
-
-echo [5/5] ??????...
-if exist "%~dp0data\videos" rmdir /s /q "%~dp0data\videos"
-if exist "%~dp0data\cookies" rmdir /s /q "%~dp0data\cookies"
-if exist "%~dp0data\app.db" del /q "%~dp0data\app.db"
-echo       OK
+:: Clean logs
+echo [3/3] Cleaning logs...
+if exist "%ROOT%logs\backend" del /q "%ROOT%logs\backend\*.log" 2>nul
+if exist "%ROOT%logs\frontend" del /q "%ROOT%logs\frontend\*.log" 2>nul
+if exist "%ROOT%logs\database" del /q "%ROOT%logs\database\*.log" 2>nul
+if exist "%ROOT%logs\uvi_err.log" del /q "%ROOT%logs\uvi_err.log" 2>nul
+if exist "%ROOT%logs\uvi_out.log" del /q "%ROOT%logs\uvi_out.log" 2>nul
+echo   Done.
 
 echo.
-echo ==================================================
-echo   ????????:
-echo   [X] backend\venv           (Python ????)
-echo   [X] frontend\node_modules   (npm ??)
-echo   [X] __pycache__             (Python ??)
-echo   [X] data\app.db / videos / cookies (????)
-echo.
-echo   [O] ?? Python  -- ????
-echo   [O] ?? npm     -- ????
-echo   [O] ???       -- ????
-echo ==================================================
-
+echo ========================================
+echo   Cleanup complete!
+echo   Run test_start.bat to start fresh.
+echo ========================================
 pause

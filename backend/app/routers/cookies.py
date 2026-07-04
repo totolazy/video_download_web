@@ -42,7 +42,12 @@ async def cookie_status(
                 last_used_at=cookie.last_used_at.isoformat() if cookie.last_used_at else None,
             )
         else:
-            status_map[platform] = CookieStatusItem(exists=False)
+            # Check filesystem directly as fallback (defense against stale DB)
+            fs_path = settings.COOKIES_DIR / current_user.username / platform / "cookies.txt"
+            if fs_path.exists():
+                status_map[platform] = CookieStatusItem(exists=True, uploaded_at=str(datetime.fromtimestamp(fs_path.stat().st_mtime, tz=timezone.utc)))
+            else:
+                status_map[platform] = CookieStatusItem(exists=False)
 
     return CookieStatusResponse(cookies=status_map)
 
@@ -63,7 +68,7 @@ async def upload_cookie(
 
     # Build safe path and create directory
     try:
-        dir_path = safe_path(settings.COOKIES_DIR, str(current_user.id), platform)
+        dir_path = safe_path(settings.COOKIES_DIR, current_user.username, platform)
     except ValueError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

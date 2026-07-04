@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from fastapi.responses import FileResponse, StreamingResponse
 from sqlalchemy import func, select
 
-from app.core.auth import get_current_user
+from app.core.auth import get_current_user, get_current_user_optional, get_current_user_optional
 from app.database import async_session_factory, get_db
 from app.models.cookie import Cookie
 from app.models.download import Download
@@ -113,7 +113,7 @@ async def get_download_detail(
 async def download_progress(
     download_id: int,
     request: Request,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user_optional),
 ):
     """SSE endpoint that streams download progress updates."""
 
@@ -156,7 +156,7 @@ async def download_progress(
 @router.get("/{download_id}/file")
 async def download_file(
     download_id: int,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user_optional),
     db=Depends(get_db),
 ):
     """Stream the completed video file to the client."""

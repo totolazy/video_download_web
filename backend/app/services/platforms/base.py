@@ -31,7 +31,9 @@ class DownloadStrategy(ABC):
 
     def get_format_string(self, resolution: str | None) -> str:
         """Build the yt-dlp -f format selector from a resolution like '1080p'."""
-        return "best"
+        if not resolution or resolution in ("best", "default"):
+            return "bestvideo+bestaudio/best"
+        return resolution
 
     def parse_extracted_info(self, stdout: str) -> dict[str, Any] | None:
         """Parse yt-dlp --print JSON info from the last printed line."""
