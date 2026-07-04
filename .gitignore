@@ -12,3 +12,5 @@ server_pids.txt
 venv/
 
 logs/
+
+logs/
