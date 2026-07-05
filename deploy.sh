@@ -12,6 +12,11 @@ echo -e "${CY}==================================================${NC}"
 echo -e "${CY}  Video Downloader - Deploy${NC}"
 echo -e "${CY}==================================================${NC}"
 echo ""
+# Clean stale state from previous runs
+systemctl stop video-dl 2>/dev/null
+systemctl stop caddy 2>/dev/null
+rm -f /etc/apt/sources.list.d/caddy-stable.list
+
 [ "$(id -u)" -ne 0 ] && echo -e "${RD}Run with: sudo bash deploy.sh${NC}" && exit 1
 
 echo -e "${YL}[Config]${NC}"
@@ -112,6 +117,7 @@ echo -e "${GR}=== Deploy Complete! ===${NC}"
 echo -e "URL: ${CY}https://${DOMAIN}${NC}"
 echo -e "User: root  Pass: ${GR}${RP}${NC}"
 echo -e "Videos auto-deleted after 30min | Restart=always"
+
 
 
 
