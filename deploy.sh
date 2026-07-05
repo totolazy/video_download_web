@@ -36,9 +36,13 @@ id -u "$AU" > /dev/null 2>&1 || useradd -r -s /bin/false "$AU"
 mkdir -p "$AD/data/videos" "$AD/data/cookies" "$AD/logs/backend" "$AD/logs/frontend" "$AD/logs/database"
 echo -e "${GR}  [OK]${NC}"
 
-echo -e "${YL}[3/8] Copy code...${NC}"
-SD="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-cp -r "$SD/backend" "$AD/"; cp -r "$SD/frontend" "$AD/"
+echo -e "${YL}[3/8] Clone code from GitHub...${NC}"
+rm -rf "$AD/backend" "$AD/frontend" 2>/dev/null
+git clone --depth 1 https://github.com/totolazy/video_download_web.git /tmp/vdl_clone
+cp -r /tmp/vdl_clone/backend "$AD/"
+cp -r /tmp/vdl_clone/frontend "$AD/"
+rm -rf /tmp/vdl_clone
+echo 'Code cloned from GitHub'; 
 echo -e "${GR}  [OK]${NC}"
 
 echo -e "${YL}[4/8] Python venv...${NC}"
@@ -106,6 +110,7 @@ echo -e "${GR}=== Deploy Complete! ===${NC}"
 echo -e "URL: ${CY}https://${DOMAIN}${NC}"
 echo -e "User: root  Pass: ${GR}${RP}${NC}"
 echo -e "Videos auto-deleted after 30min | Restart=always"
+
 
 
 
