@@ -51,7 +51,9 @@ source venv/bin/activate; pip install -q -r requirements.txt; pip install -q --f
 echo -e "${GR}  [OK]${NC}"
 
 echo -e "${YL}[5/8] Frontend build...${NC}"
-cd "$AD/frontend"; npm install --prefer-offline --no-audit --no-fund; NODE_OPTIONS=--max-old-space-size=512 npm run build
+# Ensure swap for low-memory servers
+if [ ! -f /swapfile ]; then fallocate -l 1G /swapfile && chmod 600 /swapfile && mkswap /swapfile && swapon /swapfile; fi
+cd "$AD/frontend"; NODE_OPTIONS='--max-old-space-size=256' npm install --prefer-offline --no-audit --no-fund; NODE_OPTIONS=--max-old-space-size=512 npm run build
 echo -e "${GR}  [OK]${NC}"
 
 echo -e "${YL}[6/8] Database init...${NC}"
@@ -110,6 +112,7 @@ echo -e "${GR}=== Deploy Complete! ===${NC}"
 echo -e "URL: ${CY}https://${DOMAIN}${NC}"
 echo -e "User: root  Pass: ${GR}${RP}${NC}"
 echo -e "Videos auto-deleted after 30min | Restart=always"
+
 
 
 
