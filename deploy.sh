@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 # Video Downloader - One-Click Deploy
 # Target: Ubuntu 20.04+ / Debian 11+
 # Usage:  sudo bash deploy.sh
