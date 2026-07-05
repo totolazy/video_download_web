@@ -27,7 +27,7 @@ read -p "Confirm? (y/n): " CF; [ "$CF" != "y" ] && echo "Cancelled" && exit 0
 echo ""; echo -e "${YL}[1/8] System deps...${NC}"
 apt-get update -qq; apt-get install -y -qq python3 python3-venv python3-pip ffmpeg curl git openssl > /dev/null
 command -v node &> /dev/null || (curl -fsSL https://deb.nodesource.com/setup_20.x | bash - > /dev/null 2>&1 && apt-get install -y -qq nodejs > /dev/null)
-command -v caddy &> /dev/null || (apt-get install -y -qq debian-keyring debian-archive-keyring && curl -fsSL "https://dl.cloudsmith.io/public/caddy/stable/gpg.key" -o /tmp/caddy.gpg && gpg --dearmor < /tmp/caddy.gpg > /usr/share/keyrings/caddy-stable-archive-keyring.gpg && rm -f /tmp/caddy.gpg && curl -fsSL "https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt" | tee /etc/apt/sources.list.d/caddy-stable.list && apt-get update -qq > /dev/null && apt-get install -y -qq caddy > /dev/null)
+rm -f /etc/apt/sources.list.d/caddy-stable.list 2>/dev/null; command -v caddy &> /dev/null || (apt-get install -y -qq debian-keyring debian-archive-keyring && curl -fsSL "https://dl.cloudsmith.io/public/caddy/stable/gpg.key" -o /tmp/caddy.gpg && gpg --dearmor < /tmp/caddy.gpg > /usr/share/keyrings/caddy-stable-archive-keyring.gpg && rm -f /tmp/caddy.gpg && curl -fsSL "https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt" | tee /etc/apt/sources.list.d/caddy-stable.list && apt-get update -qq > /dev/null && apt-get install -y -qq caddy > /dev/null)
 command -v yt-dlp &> /dev/null || pip3 install -q yt-dlp --break-system-packages
 echo -e "${GR}  [OK]${NC}"
 
@@ -43,7 +43,7 @@ echo -e "${GR}  [OK]${NC}"
 
 echo -e "${YL}[4/8] Python venv...${NC}"
 cd "$AD/backend"; python3 -m venv venv
-source venv/bin/activate; pip install -q -r requirements.txt; pip install -q yt-dlp bcrypt==4.0.1; deactivate
+source venv/bin/activate; pip install -q -r requirements.txt; pip install -q --force-reinstall bcrypt==4.0.1; pip install -q yt-dlp --break-system-packages; deactivate
 echo -e "${GR}  [OK]${NC}"
 
 echo -e "${YL}[5/8] Frontend build...${NC}"
@@ -106,6 +106,7 @@ echo -e "${GR}=== Deploy Complete! ===${NC}"
 echo -e "URL: ${CY}https://${DOMAIN}${NC}"
 echo -e "User: root  Pass: ${GR}${RP}${NC}"
 echo -e "Videos auto-deleted after 30min | Restart=always"
+
 
 
 
