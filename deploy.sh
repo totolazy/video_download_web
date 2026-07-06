@@ -58,7 +58,7 @@ echo -e "${GR}  [OK]${NC}"
 echo -e "${YL}[5/8] Frontend build...${NC}"
 # Ensure swap for low-memory servers
 if [ ! -f /swapfile ]; then fallocate -l 1G /swapfile && chmod 600 /swapfile && mkswap /swapfile && swapon /swapfile; fi
-cd "$AD/frontend"; NODE_OPTIONS='--max-old-space-size=256' npm install --prefer-offline --no-audit --no-fund; NODE_OPTIONS=--max-old-space-size=512 npm run build
+cd "$AD/frontend"; NODE_OPTIONS='--max-old-space-size=256' npm install --prefer-offline --no-audit --no-fund; NODE_OPTIONS=--max-old-space-size=512 npx vite build
 echo -e "${GR}  [OK]${NC}"
 
 echo -e "${YL}[6/8] Database init...${NC}"
