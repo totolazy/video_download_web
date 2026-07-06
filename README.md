@@ -245,6 +245,14 @@
 
 > 适用于 **Ubuntu 20.04+** / **Debian 11+**
 
+**一键命令（推荐）：**
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/totolazy/video_download_web/main/deploy.sh -o deploy.sh && sudo bash deploy.sh
+```
+
+仅需这一条命令，下载 `deploy.sh` 并运行，脚本会自动完成剩余所有步骤（安装依赖、克隆项目、构建、配置 HTTPS 等）。
+
 ### 国外服务器
 
 ```bash
