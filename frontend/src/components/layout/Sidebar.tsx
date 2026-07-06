@@ -1,3 +1,4 @@
+import { useState } from "react"
 import { NavLink } from "react-router-dom"
 import { useAuth } from "@/hooks/useAuth"
 import { Download, Clock, Cookie, Shield, PanelLeftClose, PanelLeftOpen } from "lucide-react"
@@ -16,6 +17,7 @@ interface SidebarProps {
 
 export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const { isRoot } = useAuth()
+  const [hoverLogo, setHoverLogo] = useState(false)
 
   const linkClass = (isActive: boolean) =>
     "flex items-center gap-3 rounded-xl transition-all duration-300 ease-in-out " +
@@ -43,13 +45,13 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
         </div>
       ) : (
         <div className="flex h-14 items-center gap-3 px-5 bg-card">
-          <img src="/logo-white.png" alt="ReelBox" className="h-7 w-7 shrink-0 rounded-lg object-cover" />
+          <img src="/logo-white.png" alt="ReelBox" className="h-6 w-6 shrink-0 rounded-lg object-cover" />
           <span className="text-lg font-bold text-foreground whitespace-nowrap flex-1">
             ReelBox
           </span>
           <button
             onClick={onToggle}
-            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-all duration-200"
+            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-all duration-200"
             title="收纳菜单"
           >
             <PanelLeftClose className="h-4 w-4" />
