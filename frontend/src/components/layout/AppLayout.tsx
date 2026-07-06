@@ -19,7 +19,7 @@ export default function AppLayout() {
         style={{ marginLeft: collapsed ? "4rem" : "16rem" }}
       >
         {/* Top header bar */}
-        <div className="sticky top-0 z-30 flex h-14 items-center justify-end gap-3 border-b bg-card px-6">
+        <div className="sticky top-0 z-30 flex h-14 items-center justify-end gap-3 bg-card px-6" style={{ boxShadow: "0 1px 8px rgba(74,55,33,0.05)" }}>
           <div className="flex items-center gap-3">
             <span className="flex items-center gap-2 text-sm text-muted-foreground">
               <User className="h-4 w-4" />
