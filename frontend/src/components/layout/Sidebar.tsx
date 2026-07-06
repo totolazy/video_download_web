@@ -1,5 +1,6 @@
 import { NavLink } from "react-router-dom"
 import { Download, Clock, Cookie, Shield, PanelLeftClose, PanelLeftOpen } from "lucide-react"
+import { useAuth } from "@/hooks/useAuth"
 import { Separator } from "@/components/ui/separator"
 
 const navItems = [
@@ -14,6 +15,7 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
+  const { isRoot } = useAuth()
   const linkClass = (isActive: boolean) =>
     `flex items-center gap-3 rounded-xl transition-all duration-300 ease-in-out ${
       collapsed ? "justify-center px-0 py-2.5" : "px-3 py-2.5"
@@ -73,6 +75,21 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
             </span>
           </NavLink>
         ))}
+        {isRoot && (
+          <NavLink
+            to="/admin"
+            className={({ isActive }) => linkClass(isActive)}
+            title={collapsed ? "用户管理" : undefined}
+          >
+            <Shield className="h-4 w-4 shrink-0" />
+            <span
+              className="whitespace-nowrap transition-all duration-300 ease-in-out"
+              style={{ opacity: collapsed ? 0 : 1, width: collapsed ? 0 : "auto", overflow: "hidden", transform: collapsed ? "translateX(-4px)" : "translateX(0)" }}
+            >
+              用户管理
+            </span>
+          </NavLink>
+        )}
       </nav>
     </aside>
   )
