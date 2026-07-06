@@ -37,7 +37,7 @@
      >
        <div className="flex h-14 items-center gap-3 overflow-hidden" style={{ paddingLeft: collapsed ? "1rem" : "1.5rem", paddingRight: collapsed ? "1rem" : "1.5rem" }}>
          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary">
-           <Download className="h-4 w-4 text-primary-foreground" />
+           <img src="/logo-white.png" alt="ReelBox" className="h-8 w-8 shrink-0 rounded-xl object-cover" />
          </div>
          <span
            className="text-lg font-bold text-foreground whitespace-nowrap transition-opacity duration-200"

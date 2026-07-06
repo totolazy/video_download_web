@@ -35,7 +35,7 @@ export default function LoginPage() {
       <Card className="w-full max-w-sm rounded-2xl shadow-lg border-0">
         <CardHeader className="text-center pb-2">
           <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
-            <Download className="h-7 w-7 text-primary" />
+<img src="/logo-white.png" alt="ReelBox" className="mx-auto mb-3 h-16 w-16 rounded-2xl object-cover" />
           </div>
           <CardTitle className="text-2xl font-bold text-foreground">ReelBox</CardTitle>
           <CardDescription>请登录以继续</CardDescription>
