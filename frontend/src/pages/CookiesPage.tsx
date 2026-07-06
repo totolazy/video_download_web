@@ -8,7 +8,7 @@ export default function CookiesPage() {
       <h1 className="mb-6 text-2xl font-semibold">Cookies 管理</h1>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {SUPPORTED_PLATFORMS.map((platform) => (
-          <Card key={platform}>
+          <Card key={platform} className="rounded-xl border-0 shadow-sm">
             <CardHeader>
               <CardTitle className="text-base">{PLATFORMS[platform]}</CardTitle>
             </CardHeader>

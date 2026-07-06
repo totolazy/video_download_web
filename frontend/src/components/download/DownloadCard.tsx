@@ -133,7 +133,7 @@ export default function DownloadCard() {
   const canDownload = !!url && !!platform && hasCookies
 
   return (
-    <Card>
+    <Card className="rounded-2xl border-0 shadow-md">
       <CardHeader>
         <CardTitle>下载视频</CardTitle>
       </CardHeader>
@@ -141,7 +141,7 @@ export default function DownloadCard() {
         {/* === COMPLETED === */}
         {phase === "completed" && downloadId && (
           <div className="space-y-4">
-            <div className="flex items-center gap-2 rounded-md border border-green-200 bg-green-50 p-3">
+            <div className="flex items-center gap-2 rounded-xl border border-green-200 bg-green-50 p-3">
               <CheckCircle2 className="h-5 w-5 text-green-500" />
               <span className="text-sm font-medium text-green-700">下载成功</span>
             </div>
@@ -165,7 +165,7 @@ export default function DownloadCard() {
         {/* === ERROR === */}
         {phase === "error" && (
           <div className="space-y-4">
-            <div className="flex items-start gap-3 rounded-md border border-red-200 bg-red-50 p-4">
+            <div className="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 p-4">
               <AlertCircle className="h-5 w-5 text-red-500 mt-0.5" />
               <div className="flex-1">
                 <p className="text-sm font-medium text-red-800">下载失败</p>

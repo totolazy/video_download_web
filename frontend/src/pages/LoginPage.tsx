@@ -1,4 +1,4 @@
-﻿import { useState } from "react"
+import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { useAuth } from "@/hooks/useAuth"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -31,13 +31,13 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50">
-      <Card className="w-full max-w-sm">
-        <CardHeader className="text-center">
-          <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-            <Download className="h-6 w-6 text-primary" />
+    <div className="flex min-h-screen items-center justify-center bg-background">
+      <Card className="w-full max-w-sm rounded-2xl shadow-lg border-0">
+        <CardHeader className="text-center pb-2">
+          <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
+            <Download className="h-7 w-7 text-primary" />
           </div>
-          <CardTitle>视频下载</CardTitle>
+          <CardTitle className="text-2xl font-bold text-foreground">ReelBox</CardTitle>
           <CardDescription>请登录以继续</CardDescription>
         </CardHeader>
         <CardContent>
@@ -49,6 +49,7 @@ export default function LoginPage() {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 autoFocus
+                className="rounded-xl"
               />
             </div>
             <div className="space-y-2">
@@ -58,12 +59,13 @@ export default function LoginPage() {
                 placeholder="输入密码"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                className="rounded-xl"
               />
             </div>
             {error && (
-              <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">{error}</div>
+              <div className="rounded-xl bg-red-50 p-3 text-sm text-red-600">{error}</div>
             )}
-            <Button className="w-full" type="submit" disabled={loading}>
+            <Button className="w-full rounded-xl" type="submit" disabled={loading}>
               {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
               登录
             </Button>

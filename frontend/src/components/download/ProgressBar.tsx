@@ -27,7 +27,7 @@ export default function ProgressBar({ downloadId, onReset, onRetry }: ProgressBa
       </div>
       <Progress
         value={progress}
-        className={isCompleted ? "[&>div]:bg-green-500" : isFailed ? "[&>div]:bg-red-500" : ""}
+        className={isCompleted ? "[&>div]:bg-primary" : isFailed ? "[&>div]:bg-destructive" : ""}
       />
       {isCompleted && (
         <Button
@@ -40,7 +40,7 @@ export default function ProgressBar({ downloadId, onReset, onRetry }: ProgressBa
       )}
       {isFailed && (
         <div className="space-y-2">
-          <div className="flex items-center gap-2 text-sm text-red-500">
+          <div className="flex items-center gap-2 text-sm text-destructive">
             <AlertCircle className="h-4 w-4" />
             {errorMessage || "下载失败"}
           </div>

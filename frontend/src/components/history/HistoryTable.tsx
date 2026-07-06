@@ -7,10 +7,10 @@ import { Progress } from "@/components/ui/progress"
 import { Download, RotateCw } from "lucide-react"
 
 const statusColors: Record<string, string> = {
-  pending: "bg-gray-100 text-gray-600",
-  processing: "bg-blue-100 text-blue-600",
-  completed: "bg-green-100 text-green-600",
-  failed: "bg-red-100 text-red-600",
+  pending: "bg-muted text-muted-foreground",
+  processing: "bg-accent text-accent-foreground",
+  completed: "bg-primary/15 text-primary",
+  failed: "bg-destructive/10 text-destructive",
 }
 
 const statusLabels: Record<string, string> = {
