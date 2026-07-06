@@ -44,7 +44,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
             {hoverLogo && (
               <button
                 onClick={onToggle}
-                className="absolute inset-0 flex items-center justify-center rounded-lg bg-card transition-all duration-150"
+                className="absolute -inset-x-0.5 -inset-y-0.5 flex items-center justify-center rounded-lg bg-card transition-all duration-150"
               >
                 <PanelLeftOpen className="h-4 w-4 text-muted-foreground" />
               </button>
