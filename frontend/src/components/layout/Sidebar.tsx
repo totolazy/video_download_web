@@ -78,7 +78,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
             title={collapsed ? label : undefined}
           >
             <Icon className="h-4 w-4 shrink-0" />
-            {!collapsed && <span>{label}</span>}
+            {!collapsed ? <span className="overflow-hidden whitespace-nowrap transition-all duration-300 ease-in-out" style={{ maxWidth: collapsed ? "0px" : "200px", opacity: collapsed ? 0 : 1 }}>{label}</span> : null}
           </NavLink>
         ))}
         {isRoot && (
