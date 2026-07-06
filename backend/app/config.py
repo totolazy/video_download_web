@@ -18,12 +18,14 @@ class Settings(BaseSettings):
     JWT_ALGORITHM: str = "HS256"
     JWT_EXPIRE_HOURS: int = 24
 
-    # 瑙嗛淇濈暀鍒嗛挓鏁帮紙瓒呮椂鑷姩娓呯悊锛?    VIDEO_RETENTION_MINUTES: int = 30
+    # 瑙嗛淇濈暀鍒嗛挓鏁帮紙瓒呮椂鑷姩娓呯悊锛?
+    VIDEO_RETENTION_MINUTES: int = 30
 
     # 娓呯悊浠诲姟闂撮殧锛堝垎閽燂級
     CLEANUP_INTERVAL_MINUTES: int = 15
 
-    # 鏀寔鐨勬墍鏈夊钩鍙?    SUPPORTED_PLATFORMS: list[str] = [
+    # 鏀寔鐨勬墍鏈夊钩鍙?
+    SUPPORTED_PLATFORMS: list[str] = [
         "youtube", "bilibili", "instagram",
         "facebook", "douyin", "tiktok"
     ]
