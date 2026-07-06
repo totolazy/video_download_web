@@ -107,6 +107,11 @@ echo -e "${GR}  [OK] (auto-restart on boot)${NC}"
 
 echo -e "${YL}[8/8] Caddy HTTPS...${NC}"
 cat > /etc/caddy/Caddyfile << CAD
+\ {
+    reverse_proxy 127.0.0.1:8000
+    encode gzip
+}
+CAD
 ${DOMAIN} { reverse_proxy 127.0.0.1:8000; encode gzip }
 CAD
 systemctl reload caddy || systemctl start caddy
