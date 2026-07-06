@@ -13,21 +13,21 @@ echo -e "${CY}  Video Downloader - Deploy${NC}"
 echo -e "${CY}==================================================${NC}"
 echo ""
 # Clean stale state from previous runs
-systemctl stop video-dl 2>/dev/null
-systemctl stop caddy 2>/dev/null
+systemctl stop video-dl 2>/dev/null || true
+systemctl stop caddy 2>/dev/null || true
 rm -f /etc/apt/sources.list.d/caddy-stable.list
 
 [ "$(id -u)" -ne 0 ] && echo -e "${RD}Run with: sudo bash deploy.sh${NC}" && exit 1
 
 echo -e "${YL}[Config]${NC}"
-read -p "  Domain (e.g. video.example.com): " DOMAIN
-[ -z "$DOMAIN" ] && echo -e "${RD}Domain required${NC}" && exit 1
-read -s -p "  Root password (blank = auto-generate): " RP
+if [ -n "${DEPLOY_DOMAIN}" ]; then DOMAIN="${DEPLOY_DOMAIN}"; echo "  Domain: ${DOMAIN}"; else read -p "  Domain (e.g. video.example.com): " DOMAIN; fi
+[ -z "${DOMAIN}" ] && echo -e "${RD}Domain required${NC}" && exit 1
+if [ -n "${DEPLOY_ROOT_PASS}" ]; then RP="${DEPLOY_ROOT_PASS}"; echo "  Root password: ****"; else read -s -p "  Root password (blank = auto-generate): " RP; fi
 echo ""
-[ -z "$RP" ] && RP=$(openssl rand -base64 12 | tr -d "=+/") && echo -e "${GR}  Generated: ${RP}${NC}"
+[ -z "${RP}" ] && RP=$(openssl rand -base64 12 | tr -d "=+/") && echo -e "${GR}  Generated: ${RP}${NC}"
 JS=$(openssl rand -hex 32)
 echo ""; echo -e "Domain: ${GR}${DOMAIN}${NC}  Password: ${GR}${RP}${NC}"
-read -p "Confirm? (y/n): " CF; [ "$CF" != "y" ] && echo "Cancelled" && exit 0
+if [ -n "${DEPLOY_CONFIRM}" ]; then CF="${DEPLOY_CONFIRM}"; echo "  Confirm: ${CF}"; else read -p "Confirm? (y/n): " CF; fi; [ "${CF}" != "y" ] && echo "Cancelled" && exit 0
 
 echo ""; echo -e "${YL}[1/8] System deps...${NC}"
 apt-get update -qq; apt-get install -y -qq python3 python3-venv python3-pip ffmpeg curl git openssl > /dev/null
