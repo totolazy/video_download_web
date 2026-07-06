@@ -27,12 +27,12 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
 
   return (
     <aside
-      className="fixed left-0 top-0 flex h-screen flex-col transition-all duration-300 ease-in-out z-40" style={{ width: collapsed ? "4rem" : "16rem", backgroundColor: "#FCF5D6", boxShadow: "2px 0 12px rgba(74,55,33,0.06)" }}
-      style={{ width: collapsed ? "4rem" : "16rem" }}
+      className="fixed left-0 top-0 flex h-screen flex-col transition-all duration-300 ease-in-out z-40"
+      style={{ width: collapsed ? "4rem" : "16rem", boxShadow: "2px 0 12px rgba(74,55,33,0.06)" }}
     >
-      {/* Header */}
+      {/* Header — matches top bar color */}
       {collapsed ? (
-        <div className="flex h-14 items-center justify-center">
+        <div className="flex h-14 items-center justify-center bg-card">
           <button
             onClick={onToggle}
             className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-all duration-200"
@@ -42,7 +42,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
           </button>
         </div>
       ) : (
-        <div className="flex h-14 items-center gap-3 px-5">
+        <div className="flex h-14 items-center gap-3 px-5 bg-card">
           <img src="/logo-white.png" alt="ReelBox" className="h-7 w-7 shrink-0 rounded-lg object-cover" />
           <span className="text-lg font-bold text-foreground whitespace-nowrap flex-1">
             ReelBox
@@ -58,10 +58,14 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
       )}
       <Separator />
 
-      {/* Navigation */}
+      {/* Navigation — lighter sidebar body */}
       <nav
         className="flex-1 space-y-1 py-2 overflow-hidden"
-        style={{ paddingLeft: collapsed ? "0.5rem" : "0.75rem", paddingRight: collapsed ? "0.5rem" : "0.75rem" }}
+        style={{
+          paddingLeft: collapsed ? "0.5rem" : "0.75rem",
+          paddingRight: collapsed ? "0.5rem" : "0.75rem",
+          backgroundColor: "#F3E8DA",
+        }}
       >
         {navItems.map(({ to, label, icon: Icon }) => (
           <NavLink
