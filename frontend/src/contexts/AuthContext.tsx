@@ -1,4 +1,4 @@
-﻿import { createContext, useState, useEffect, useCallback, type ReactNode } from "react"
+﻿import { createContext, useState, useEffect, useCallback, useMemo, type ReactNode } from "react"
 import client from "@/api/client"
 
 export interface UserInfo {
@@ -25,7 +25,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string | null>(() => localStorage.getItem("token"))
   const [loading, setLoading] = useState(true)
 
+  const devMode = useMemo(() => import.meta.env.VITE_DEV_MODE === "true", [])
+
+  const devUser: UserInfo = useMemo(() => ({
+    id: 1,
+    username: "dev",
+    is_root: true,
+    note: "开发模式",
+  }), [])
+
   useEffect(() => {
+    if (devMode) {
+      setUser(devUser)
+      setLoading(false)
+      return
+    }
     if (!token) {
       setLoading(false)
       return
@@ -37,7 +51,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setToken(null)
       })
       .finally(() => setLoading(false))
-  }, [token])
+  }, [token, devMode, devUser])
 
   const login = useCallback(async (username: string, password: string) => {
     const res = await client.post("/auth/login", { username, password })
@@ -53,7 +67,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null)
   }, [])
 
-  const isRoot = user?.is_root ?? false
+  const isRoot = devMode ? true : (user?.is_root ?? false)
 
   return (
     <AuthContext.Provider value={{ user, token, loading, login, logout, isRoot }}>
