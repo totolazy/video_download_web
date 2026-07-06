@@ -46,16 +46,15 @@ export default function AppLayout() {
                 <div className="absolute right-0 top-full mt-1 w-36 rounded-xl border-0 bg-card py-1 shadow-lg z-50">
                   <button
                     onClick={() => { setMenuOpen(false); setPwdOpen(true) }}
-                    className="flex w-full items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-accent transition-colors rounded-lg mx-1"
+                    className="flex w-full items-center px-4 py-2 text-sm text-foreground hover:bg-accent transition-colors rounded-lg mx-1"
                   >
-                    <Settings className="h-3.5 w-3.5 text-muted-foreground" />
                     修改密码
                   </button>
                   <button
                     onClick={() => { setMenuOpen(false); logout() }}
-                    className="flex w-full items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-destructive/10 transition-colors rounded-lg mx-1"
+                    className="flex w-full items-center px-4 py-2 text-sm text-destructive hover:bg-destructive/10 transition-colors rounded-lg mx-1"
                   >
-                    <span className="ml-[22px]">退出登录</span>
+                    退出登录
                   </button>
                 </div>
               )}
