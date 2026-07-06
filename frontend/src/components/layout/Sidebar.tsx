@@ -27,7 +27,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
 
   return (
     <aside
-      className="fixed left-0 top-0 flex h-screen flex-col bg-card transition-all duration-300 ease-in-out z-40" style={{ width: collapsed ? "4rem" : "16rem", boxShadow: "2px 0 12px rgba(74,55,33,0.06)" }}
+      className="fixed left-0 top-0 flex h-screen flex-col bg-card transition-all duration-300 ease-in-out z-40" style={{ width: collapsed ? "4rem" : "16rem", boxShadow: "2px 0 12px rgba(74,55,33,0.06)", backgroundColor: "#FDF3E3" }}
       style={{ width: collapsed ? "4rem" : "16rem" }}
     >
       {/* Header */}
