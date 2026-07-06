@@ -88,7 +88,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
             title={collapsed ? "用户管理" : undefined}
           >
             <Shield className="h-4 w-4 shrink-0" />
-            {!collapsed && <span>用户管理</span>}
+            {!collapsed ? <span className="overflow-hidden whitespace-nowrap transition-all duration-300 ease-in-out" style={{ maxWidth: collapsed ? "0px" : "200px", opacity: collapsed ? 0 : 1 }}>用户管理</span> : null}
           </NavLink>
         )}
       </nav>
