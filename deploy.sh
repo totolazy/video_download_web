@@ -109,7 +109,7 @@ echo -e "${YL}[8/8] Caddy HTTPS...${NC}"
 cat > /etc/caddy/Caddyfile << CAD
 ${DOMAIN} { reverse_proxy 127.0.0.1:8000; encode gzip }
 CAD
-systemctl reload caddy
+systemctl reload caddy || systemctl start caddy
 echo -e "${GR}  [OK]${NC}"
 
 echo ""
