@@ -34,14 +34,22 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
     >
       {/* Header — matches top bar color */}
       {collapsed ? (
-        <div className="flex h-14 items-center justify-center bg-card">
-          <button
-            onClick={onToggle}
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-all duration-200"
-            title="展开菜单"
-          >
-            <PanelLeftOpen className="h-4 w-4" />
-          </button>
+        <div
+          className="flex h-14 items-center justify-center bg-card"
+          onMouseEnter={() => setHoverLogo(true)}
+          onMouseLeave={() => setHoverLogo(false)}
+        >
+          <div className="relative">
+            <img src="/logo-white.png" alt="ReelBox" className="h-6 w-6 block rounded-lg object-cover" />
+            {hoverLogo && (
+              <button
+                onClick={onToggle}
+                className="absolute inset-0 flex items-center justify-center rounded-lg bg-card transition-all duration-150"
+              >
+                <PanelLeftOpen className="h-4 w-4 text-muted-foreground" />
+              </button>
+            )}
+          </div>
         </div>
       ) : (
         <div className="flex h-14 items-center gap-3 px-5 bg-card">
