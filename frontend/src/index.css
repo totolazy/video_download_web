@@ -33,3 +33,15 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+/* Mobile safe area for bottom nav */
+@utility pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+@media (width < 768px) {
+  /* Reduce content area padding on mobile */
+  main > .p-6 {
+    padding: 1rem;
+  }
+}
