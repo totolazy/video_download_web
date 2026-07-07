@@ -39,7 +39,7 @@ export default function CookiesStatus({ platform, onUploaded }: CookiesStatusPro
   }
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2 max-md:flex-wrap">
       {status?.exists ? (
         <>
           <CheckCircle2 className="h-4 w-4 text-green-500" />
