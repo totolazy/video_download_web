@@ -9,7 +9,6 @@ interface UrlInputProps {
 }
 
 export default function UrlInput({ onDetected }: UrlInputProps) {
-
   const [url, setUrl] = useState("")
   const [loading, setLoading] = useState(false)
   const [hint, setHint] = useState<string | null>(null)

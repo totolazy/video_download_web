@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { NavLink, useNavigate } from "react-router-dom"
+import { NavLink } from "react-router-dom"
 import { useAuth } from "@/hooks/useAuth"
 import { Download, Clock, Cookie, Shield, PanelLeftClose, PanelLeftOpen } from "lucide-react"
 import { Separator } from "@/components/ui/separator"

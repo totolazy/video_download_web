@@ -10,7 +10,7 @@ export default function AppLayout() {
   const [pwdOpen, setPwdOpen] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
-  const { user, logout } = useAuth()
+  const { user, logout, isRoot } = useAuth()
 
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
