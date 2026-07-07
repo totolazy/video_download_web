@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { NavLink } from "react-router-dom"
+import { NavLink, useNavigate } from "react-router-dom"
 import { useAuth } from "@/hooks/useAuth"
 import { Download, Clock, Cookie, Shield, PanelLeftClose, PanelLeftOpen } from "lucide-react"
 import { Separator } from "@/components/ui/separator"
@@ -29,7 +29,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
 
   return (
     <aside
-      className="fixed left-0 top-0 flex h-screen flex-col transition-all duration-300 ease-in-out z-40"
+      className="hidden md:flex fixed left-0 top-0 h-screen flex-col transition-all duration-300 ease-in-out z-40"
       style={{ width: collapsed ? "4rem" : "16rem", boxShadow: "2px 0 12px rgba(74,55,33,0.06)" }}
     >
       {/* Header — matches top bar color */}

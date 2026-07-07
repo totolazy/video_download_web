@@ -1,9 +1,9 @@
 import { useState, useRef, useEffect } from "react"
-import { Outlet } from "react-router-dom"
+import { Outlet, NavLink } from "react-router-dom"
 import { useAuth } from "@/hooks/useAuth"
 import Sidebar from "./Sidebar"
 import ChangePasswordDialog from "./ChangePasswordDialog"
-import { Settings, User } from "lucide-react"
+import { Settings, User, Download, Clock, Cookie, Shield } from "lucide-react"
 
 export default function AppLayout() {
   const [collapsed, setCollapsed] = useState(false)
@@ -26,10 +26,13 @@ export default function AppLayout() {
     <div className="flex min-h-screen bg-background">
       <Sidebar collapsed={collapsed} onToggle={() => setCollapsed((c) => !c)} />
       <main
-        className="flex-1 transition-all duration-300 ease-in-out"
-        style={{ marginLeft: collapsed ? "4rem" : "16rem" }}
+        className={`flex-1 transition-all duration-300 ease-in-out ${collapsed ? "md:ml-16" : "md:ml-64"}`}
       >
         <div className="sticky top-0 z-30 flex h-14 items-center justify-end bg-card px-6" style={{ boxShadow: "0 1px 8px rgba(74,55,33,0.05)" }}>
+          <div className="flex-1 flex items-center md:hidden">
+            <img src="/logo-white.png" alt="ReelBox" className="h-6 w-6 rounded-lg object-cover" />
+            <span className="ml-2 text-base font-bold text-foreground">ReelBox</span>
+          </div>
           <div className="flex items-center gap-3">
             <span className="flex items-center gap-2 text-sm text-muted-foreground">
               <User className="h-4 w-4" />
@@ -66,6 +69,33 @@ export default function AppLayout() {
         </div>
       </main>
       <ChangePasswordDialog open={pwdOpen} onOpenChange={setPwdOpen} />
+
+      {/* Mobile bottom tab bar */}
+      <nav className="fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around border-t border-border bg-card pb-safe md:hidden" style={{ boxShadow: "0 -1px 8px rgba(74,55,33,0.06)" }}>
+        <MobileTab to="/" end icon={Download} label="下载" />
+        <MobileTab to="/history" icon={Clock} label="历史" />
+        <MobileTab to="/cookies" icon={Cookie} label="Cookies" />
+        {isRoot && <MobileTab to="/admin" icon={Shield} label="管理" />}
+      </nav>
+      {/* Bottom safe area spacer for mobile */}
+      <div className="h-14 md:hidden" />
     </div>
+  )
+}
+
+function MobileTab({ to, end, icon: Icon, label }: { to: string; end?: boolean; icon: React.ComponentType<{ className?: string }>; label: string }) {
+  return (
+    <NavLink
+      to={to}
+      end={end}
+      className={({ isActive }) =>
+        `flex flex-col items-center gap-0.5 px-3 py-1.5 text-[11px] font-medium transition-colors ${
+          isActive ? "text-primary" : "text-muted-foreground"
+        }`
+      }
+    >
+      <Icon className="h-5 w-5" />
+      <span>{label}</span>
+    </NavLink>
   )
 }
