@@ -9,6 +9,7 @@ interface UrlInputProps {
 }
 
 export default function UrlInput({ onDetected }: UrlInputProps) {
+
   const [url, setUrl] = useState("")
   const [loading, setLoading] = useState(false)
   const [hint, setHint] = useState<string | null>(null)
@@ -45,7 +46,7 @@ export default function UrlInput({ onDetected }: UrlInputProps) {
   return (
     <div className="space-y-3">
       <label className="text-sm font-medium">视频链接</label>
-      <div className="flex gap-2">
+      <div className="flex gap-2 max-md:flex-col">
         <Input
           placeholder="粘贴视频链接，如 https://www.youtube.com/watch?v=..."
           value={url}
@@ -53,7 +54,7 @@ export default function UrlInput({ onDetected }: UrlInputProps) {
           onKeyDown={handleKeyDown}
           className="flex-1"
         />
-        <Button onClick={handleDetect} disabled={loading || !url.trim()}>
+        <Button onClick={handleDetect} disabled={loading || !url.trim()} className="max-md:w-full">
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
           检测
         </Button>
