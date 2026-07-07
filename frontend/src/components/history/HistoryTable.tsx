@@ -96,6 +96,7 @@ interface HistoryTableProps {
 
 export function HistoryTable({ downloads, onRetry }: HistoryTableProps) {
   return (
+    <div className="overflow-x-auto">
     <Table>
       <TableHeader>
         <TableRow>
@@ -120,5 +121,6 @@ export function HistoryTable({ downloads, onRetry }: HistoryTableProps) {
         )}
       </TableBody>
     </Table>
+    </div>
   )
 }
