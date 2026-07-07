@@ -64,6 +64,7 @@ export default function UserTable() {
 
   return (
     <>
+      <div className="overflow-x-auto">
       <Table>
         <TableHeader>
           <TableRow>
@@ -105,6 +106,7 @@ export default function UserTable() {
           ))}
         </TableBody>
       </Table>
+      </div>
 
       <Dialog open={!!resetUser} onOpenChange={(open) => { if (!open) { setResetUser(null); setNewPwd(""); setOldPwd("") } }}>
         <DialogContent>
