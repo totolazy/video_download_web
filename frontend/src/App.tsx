@@ -5,10 +5,6 @@ import { Toaster } from "sonner"
 import ProtectedRoute from "@/components/layout/ProtectedRoute"
 import AppLayout from "@/components/layout/AppLayout"
 import LoginPage from "@/pages/LoginPage"
-import HomePage from "@/pages/HomePage"
-import HistoryPage from "@/pages/HistoryPage"
-import CookiesPage from "@/pages/CookiesPage"
-import AdminPage from "@/pages/AdminPage"
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -27,12 +23,7 @@ export default function App() {
           <Routes>
             <Route path="/login" element={<LoginPage />} />
             <Route element={<ProtectedRoute />}>
-              <Route element={<AppLayout />}>
-                <Route path="/" element={<HomePage />} />
-                <Route path="/history" element={<HistoryPage />} />
-                <Route path="/cookies" element={<CookiesPage />} />
-                <Route path="/admin" element={<AdminPage />} />
-              </Route>
+              <Route path="/*" element={<AppLayout />} />
             </Route>
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

@@ -1,8 +1,12 @@
-import { useState, useRef, useEffect } from "react"
-import { Outlet, NavLink } from "react-router-dom"
+﻿import { useState, useRef, useEffect } from "react"
+import { NavLink, useLocation } from "react-router-dom"
 import { useAuth } from "@/hooks/useAuth"
 import Sidebar from "./Sidebar"
 import ChangePasswordDialog from "./ChangePasswordDialog"
+import HomePage from "@/pages/HomePage"
+import HistoryPage from "@/pages/HistoryPage"
+import CookiesPage from "@/pages/CookiesPage"
+import AdminPage from "@/pages/AdminPage"
 import { Settings, User, Download, Clock, Cookie, Shield } from "lucide-react"
 
 export default function AppLayout() {
@@ -11,6 +15,7 @@ export default function AppLayout() {
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
   const { user, logout, isRoot } = useAuth()
+  const location = useLocation()
 
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
@@ -65,7 +70,20 @@ export default function AppLayout() {
           </div>
         </div>
         <div className="p-6">
-          <Outlet />
+          <div hidden={location.pathname !== "/"}>
+            <HomePage />
+          </div>
+          <div hidden={location.pathname !== "/history"}>
+            <HistoryPage />
+          </div>
+          <div hidden={location.pathname !== "/cookies"}>
+            <CookiesPage />
+          </div>
+          {isRoot && (
+            <div hidden={location.pathname !== "/admin"}>
+              <AdminPage />
+            </div>
+          )}
         </div>
       </main>
       <ChangePasswordDialog open={pwdOpen} onOpenChange={setPwdOpen} />
